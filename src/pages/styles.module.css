@@ -9,8 +9,122 @@
   justify-content: center;
   height: calc(100vh - 300px);
 }
+.pannel {
+  padding: 20px 10px;
+  margin-right: 30px;
+  font-family: 'Neue';
+}
 .bg {
   display: inline-block;
   width: 720px;
   margin: 0 auto;
+}
+.content {
+  margin-top: 15px;
+  font-weight: normal;
+  font-size: 32px;
+  text-align: right;
+}
+.btn {
+  width: 340px;
+  height: 80px;
+  font-size: 36px;
+  font-style: italic;
+
+  font-family: 'Neue';
+  border: 0;
+  position: relative;
+  color: #fff;
+  letter-spacing: 3px;
+  line-height: 88px;
+  box-shadow: 6px 0px 0px #ff013c;
+  outline: transparent;
+  background: linear-gradient(45deg, transparent 5%, #25c2a0 5%);
+}
+
+.btn::after {
+  --slice-0: inset(50% 50% 50% 50%);
+  --slice-1: inset(80% -6px 0 0);
+  --slice-2: inset(50% -6px 30% 0);
+  --slice-3: inset(10% -6px 85% 0);
+  --slice-4: inset(40% -6px 43% 0);
+  --slice-5: inset(80% -6px 5% 0);
+  content: 'I AM JALUIK';
+  position: absolute;
+  display: block;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    transparent 3%,
+    #ff013c 3%,
+    #ff013c 5%,
+    #25c2a0 5%
+  );
+  text-shadow: -3px -3px 0px #f8f005, 3px 3px 0px #ff013c;
+  clip-path: var(--slice-0);
+}
+
+.btn:hover::after {
+  animation: glitch 1.2s infinite;
+  animation-timing-function: steps(2, end);
+}
+
+@keyframes glitch {
+  0% {
+    clip-path: var(--slice-1);
+    transform: translate(-20px, -10px);
+  }
+
+  10% {
+    clip-path: var(--slice-3);
+    transform: translate(10px, 10px);
+  }
+
+  20% {
+    clip-path: var(--slice-1);
+    transform: translate(-10px, 10px);
+  }
+
+  30% {
+    clip-path: var(--slice-3);
+    transform: translate(0px, 5px);
+  }
+
+  40% {
+    clip-path: var(--slice-2);
+    transform: translate(-5px, 0px);
+  }
+
+  50% {
+    clip-path: var(--slice-3);
+    transform: translate(5px, 0px);
+  }
+
+  60% {
+    clip-path: var(--slice-4);
+    transform: translate(5px, 10px);
+  }
+
+  70% {
+    clip-path: var(--slice-2);
+    transform: translate(-10px, 10px);
+  }
+
+  80% {
+    clip-path: var(--slice-5);
+    transform: translate(20px, -10px);
+  }
+
+  90% {
+    clip-path: var(--slice-1);
+    transform: translate(-10px, 0px);
+  }
+
+  100% {
+    clip-path: var(--slice-1);
+    transform: translate(0);
+  }
 }
