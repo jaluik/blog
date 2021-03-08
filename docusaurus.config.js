@@ -1,105 +1,58 @@
 module.exports = {
-  title: "My Site",
-  tagline: "The tagline of my site",
-  url: "https://your-docusaurus-test-site.com",
-  baseUrl: "/",
-  onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "warn",
-  favicon: "img/favicon.ico",
-  organizationName: "facebook", // Usually your GitHub org/user name.
-  projectName: "docusaurus", // Usually your repo name.
+  title: 'jaluik的个人博客',
+  tagline: 'jaluik的个人博客',
+  url: 'https://www.jaluik.com',
+  baseUrl: '/',
+  onBrokenLinks: 'throw',
+  onBrokenMarkdownLinks: 'warn',
+  favicon: 'img/favicon.ico',
+  projectName: 'log', // Usually your repo name.
+  plugins: ['docusaurus-plugin-sass'],
   themeConfig: {
     navbar: {
-      title: "My Site",
+      title: '博客',
       logo: {
-        alt: "My Site Logo",
-        src: "img/logo.svg",
+        alt: 'log',
+        src: 'img/logo.png',
       },
       items: [
         {
-          to: "docs/",
-          activeBasePath: "docs",
-          label: "Docs",
-          position: "left",
+          to: 'docs/',
+          activeBasePath: 'docs',
+          label: 'Docs',
+          position: 'left',
         },
-        { to: "blog", label: "Blog", position: "left" },
+        { to: 'blog', label: 'Blog', position: 'left' },
         {
-          href: "https://github.com/facebook/docusaurus",
-          label: "GitHub",
-          position: "right",
+          href: 'https://github.com/jaluik',
+          label: 'GitHub',
+          position: 'right',
         },
       ],
     },
     footer: {
-      style: "dark",
-      links: [
-        {
-          title: "Docs",
-          items: [
-            {
-              label: "Style Guide",
-              to: "docs/",
-            },
-            {
-              label: "Second Doc",
-              to: "docs/doc2/",
-            },
-          ],
-        },
-        {
-          title: "Community",
-          items: [
-            {
-              label: "Stack Overflow",
-              href: "https://stackoverflow.com/questions/tagged/docusaurus",
-            },
-            {
-              label: "Discord",
-              href: "https://discordapp.com/invite/docusaurus",
-            },
-            {
-              label: "Twitter",
-              href: "https://twitter.com/docusaurus",
-            },
-          ],
-        },
-        {
-          title: "More",
-          items: [
-            {
-              label: "Blog",
-              to: "blog",
-            },
-            {
-              label: "GitHub",
-              href: "https://github.com/facebook/docusaurus",
-            },
-          ],
-        },
-      ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      style: 'dark',
+      copyright: `Copyright © ${new Date().getFullYear()} ❤️ <a href="https://github.com/jaluik">Jaluik</a>`,
     },
   },
   presets: [
     [
-      "@docusaurus/preset-classic",
+      '@docusaurus/preset-classic',
       {
         docs: {
-          sidebarPath: require.resolve("./sidebars.js"),
+          sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl:
-            "https://github.com/facebook/docusaurus/edit/master/website/",
+          editUrl: 'https://github.com/jaluik/blog',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
-          editUrl:
-            "https://github.com/facebook/docusaurus/edit/master/website/blog/",
+          editUrl: 'https://github.com/jaluik/blog',
         },
         theme: {
-          customCss: require.resolve("./src/css/custom.css"),
+          customCss: require.resolve('./src/css/custom.scss'),
         },
       },
     ],
   ],
-};
+}
