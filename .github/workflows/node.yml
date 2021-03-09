@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout master
-        uses: actions/checkout@v2
+      - name: Checkout main
+        uses: actions/checkout@v2mainma
         with:
-          ref: master
+          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v1
