@@ -10,19 +10,19 @@ module.exports = {
   plugins: ['docusaurus-plugin-sass'],
   themeConfig: {
     navbar: {
-      title: '博客',
+      title: 'Jaluik',
       logo: {
         alt: 'log',
         src: 'img/logo.png',
       },
       items: [
         {
-          to: 'docs/',
+          to: 'docs/python/python-proxyPool',
           activeBasePath: 'docs',
-          label: 'Docs',
+          label: '技术博客',
           position: 'left',
         },
-        { to: 'blog', label: 'Blog', position: 'left' },
+        // { to: 'blog', label: 'Blog', position: 'left' },
         {
           href: 'https://github.com/jaluik',
           label: 'GitHub',
@@ -42,7 +42,7 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: 'https://github.com/jaluik/blog',
+          editUrl: 'https://github.com/jaluik/blog/tree/main/',
         },
         blog: {
           showReadingTime: true,
