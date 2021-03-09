@@ -2,6 +2,7 @@
   display: flex;
   justify-content: center;
 }
+
 .main {
   max-width: 1000px;
   display: flex;
@@ -22,7 +23,6 @@
 .content {
   margin-top: 15px;
   font-weight: normal;
-  font-size: 32px;
   text-align: right;
 }
 .btn {
@@ -30,7 +30,6 @@
   height: 80px;
   font-size: 36px;
   font-style: italic;
-
   font-family: 'Neue';
   border: 0;
   position: relative;
@@ -40,6 +39,23 @@
   box-shadow: 6px 0px 0px #ff013c;
   outline: transparent;
   background: linear-gradient(45deg, transparent 5%, #25c2a0 5%);
+}
+
+@media screen and (max-width: 600px) {
+  .main {
+    display: block;
+  }
+  .content {
+    font-size: 32px;
+    text-align: center;
+  }
+  .pannel {
+    margin-right: 0;
+    text-align: center;
+  }
+  .btn {
+    display: inline-block;
+  }
 }
 
 .btn::after {
