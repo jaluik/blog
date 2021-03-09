@@ -65,7 +65,7 @@ cdn 可以极大的提升用户的访问速度，并且对于个人小博客项�
 
 具体的内容如下
 
-```yml
+```yaml
 name: CI
 
 on:
@@ -111,14 +111,15 @@ jobs:
 
 with 中执行的其实都是[COSCMD 工具](https://cloud.tencent.com/document/product/436/10976)的命令， `COSCMD`是腾讯云 COS 上传的工具。
 
-里面参数含义如下
-| 参数 | 备注 |
-| --- | --- |
-| args | args 的参数是`COSCMD`中执行的 shell 脚本。`delete -r -f /` 是静默删除 COS 中根目录的所有文件 `upload -r ./build/ /`是把当前构建产生的`build`文件的内容递归上传到 COS 的根目录下面。 你可能需要根据自己需求来更换`build`为指定的地址|
-| secret_id | 从 [控制台-API 密钥管理](https://console.cloud.tencent.com/cam/capi) 获取 |
-| secret_key| 同上 |
-| bucket | 对象存储桶的名称，包含后边的数字 |
-| region | 对象存储桶的地区，[参见文档](https://cloud.tencent.com/document/product/436/6224) |
+#### 参数含义如下
+
+| 参数       | 备注                                                                                                                                                                                                                                |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| args       | args 的参数是`COSCMD`中执行的 shell 脚本。`delete -r -f /` 是静默删除 COS 中根目录的所有文件 `upload -r ./build/ /`是把当前构建产生的`build`文件的内容递归上传到 COS 的根目录下面。 你可能需要根据自己需求来更换`build`为指定的地址 |
+| secret_id  | 从 [控制台-API 密钥管理](https://console.cloud.tencent.com/cam/capi) 获取                                                                                                                                                           |
+| secret_key | 同上                                                                                                                                                                                                                                |
+| bucket     | 对象存储桶的名称，包含后边的数字                                                                                                                                                                                                    |
+| region     | 对象存储桶的地区，[参见文档](https://cloud.tencent.com/document/product/436/6224)                                                                                                                                                   |
 
 :::info 提示 The directory does not exist
 如果首次执行 `delete -r -f /` 报错提示`The directory does not exist`(文件目录不存在的话)，可以先通过腾讯云的后台上传一个文件，再重新执行 GitHub Actions 就可以了。
