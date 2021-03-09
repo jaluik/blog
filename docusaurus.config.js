@@ -17,9 +17,9 @@ module.exports = {
       },
       items: [
         {
-          to: 'docs/python/python-proxyPool',
+          to: 'docs/server/gitActionsDeploy',
           activeBasePath: 'docs',
-          label: '技术博客',
+          label: '服务器',
           position: 'left',
         },
         // { to: 'blog', label: 'Blog', position: 'left' },

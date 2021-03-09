@@ -1,6 +1,6 @@
 module.exports = {
   firstSidebar: {
-    Python: ['python/python-proxyPool'],
+    ['服务器']: ['server/gitActionsDeploy', 'server/pythonProxyPool'],
     // Features: ['mdx'],
   },
 }

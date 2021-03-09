@@ -1,8 +1,12 @@
 ---
-id: python-proxyPool
+id: pythonProxyPool
 title: python代理池爬虫
 sidebar_label: python代理池
-slug: /python/python-proxyPool
+description: python代理池爬虫
+keywords:
+  - python
+  - 代理池
+slug: /server/pythonProxyPool
 ---
 
 ## 项目准备
