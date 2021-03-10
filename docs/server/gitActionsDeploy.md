@@ -20,6 +20,8 @@ slug: /server/gitActionsDeploy
 
 > 当然前提是你需要注册腾讯云的账户
 
+[首次使用腾讯云的用户可以购买 1 核 2G 的服务器，作为练手项目完全够了。费用 1 年 95 元，3 年 288 元。建议直接买 3 年(我之前在阿里云只能 99 买 1 年，后期续费成本实在太高了)。](https://cloud.tencent.com/act/cps/redirect?redirect=10488&cps_key=6c82578c7c0898102fadd655edc3106b&from=activity)
+
 ### 开通腾讯云 COS 配置
 
 关于开通可以直接参考[官方文档](https://cloud.tencent.com/document/product/436/14106)
