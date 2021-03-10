@@ -1,8 +1,8 @@
 ---
 id: gitActionsDeploy
-title: 使用github actions实现博客的自动化部署
+title: 使用Github Actions实现博客的自动化部署
 sidebar_label: 博客自动化部署
-description: 腾讯云配合github actions实现博客自动化部署
+description: 腾讯云配合Github Actions实现博客自动化部署
 keywords:
   - github
   - github actions
