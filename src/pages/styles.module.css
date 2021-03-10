@@ -1,10 +1,14 @@
+@font-face {
+  font-family: 'Neue';
+  src: url('/fonts/BebasNeue-Regular.ttf');
+}
 .wrap {
   display: flex;
   justify-content: center;
 }
 
 .main {
-  max-width: 1000px;
+  max-width: 1100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,7 +17,6 @@
 }
 .pannel {
   padding: 20px 10px;
-  margin-right: 30px;
   font-family: 'Neue';
 }
 .bg {
@@ -27,13 +30,14 @@
   text-align: right;
 }
 .btn {
-  width: 340px;
+  width: 300px;
   height: 80px;
   font-size: 36px;
   font-style: italic;
   font-family: 'Neue';
   border: 0;
   position: relative;
+  z-index: 10;
   color: #fff;
   letter-spacing: 3px;
   line-height: 88px;
@@ -84,7 +88,7 @@
   clip-path: var(--slice-0);
 }
 
-.btn:hover::after {
+.btn::after {
   animation: glitch 1.2s infinite;
   animation-timing-function: steps(2, end);
 }
