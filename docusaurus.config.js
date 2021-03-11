@@ -7,7 +7,6 @@ module.exports = {
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
   projectName: 'log', // Usually your repo name.
-  plugins: ['docusaurus-plugin-sass'],
   themeConfig: {
     navbar: {
       title: 'Jaluik',
@@ -53,6 +52,27 @@ module.exports = {
         },
         theme: {
           customCss: require.resolve('./src/css/custom.scss'),
+        },
+      },
+    ],
+  ],
+  plugins: [
+    'docusaurus-plugin-sass',
+    // ... Your other plugins.
+    [
+      require.resolve('@easyops-cn/docusaurus-search-local'),
+      {
+        hashed: true,
+        language: ['en', 'zh'],
+        translations: {
+          search_placeholder: '搜索',
+          see_all_results: '查看所有结果',
+          no_results: '暂无结果。',
+          search_results_for: '搜索"{{ keyword }}"',
+          search_the_documentation: '搜索文档',
+          count_documents_found: '找到{{ count }}',
+          count_documents_found_plural: '找到{{ count }}个结果',
+          no_documents_were_found: '暂无结果。',
         },
       },
     ],
