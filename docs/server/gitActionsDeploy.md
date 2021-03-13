@@ -88,7 +88,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v1
         with:
-          node-version: '10.x'
+          node-version: '12.x'
 
       - name: Build project
         run: yarn && yarn build
@@ -96,7 +96,7 @@ jobs:
       - name: Upload COS
         uses: zkqiang/tencent-cos-action@v0.1.0
         with:
-          args: delete -r -f / && upload -r ./build/ /
+          args: upload -rs --delete -y ./build/ /
           secret_id: ${{ secrets.SECRET_ID }}
           secret_key: ${{ secrets.SECRET_KEY }}
           bucket: ${{ secrets.BUCKET }}
@@ -115,16 +115,16 @@ with 中执行的其实都是[COSCMD 工具](https://cloud.tencent.com/document/
 
 #### 参数含义如下
 
-| 参数       | 备注                                                                                                                                                                                                                                |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| args       | args 的参数是`COSCMD`中执行的 shell 脚本。`delete -r -f /` 是静默删除 COS 中根目录的所有文件 `upload -r ./build/ /`是把当前构建产生的`build`文件的内容递归上传到 COS 的根目录下面。 你可能需要根据自己需求来更换`build`为指定的地址 |
-| secret_id  | 从 [控制台-API 密钥管理](https://console.cloud.tencent.com/cam/capi) 获取                                                                                                                                                           |
-| secret_key | 同上                                                                                                                                                                                                                                |
-| bucket     | 对象存储桶的名称，包含后边的数字                                                                                                                                                                                                    |
-| region     | 对象存储桶的地区，[参见文档](https://cloud.tencent.com/document/product/436/6224)                                                                                                                                                   |
+| 参数       | 备注                                                                                                                                                                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| args       | args 的参数是`COSCMD`中执行的 shell 脚本。`upload -rs --delete -y ./build/ /` 命令的作用是静默同步 build 目录与 COS 远程根目录。这使得 COS 根目录的文件内容和结构与 build 中的内容和结构经过此命令后会保持一致，对于之前相同的内容会进行缓存，不会重复上传。 |
+| secret_id  | 从 [控制台-API 密钥管理](https://console.cloud.tencent.com/cam/capi) 获取                                                                                                                                                                                    |
+| secret_key | 同上                                                                                                                                                                                                                                                         |
+| bucket     | 对象存储桶的名称，包含后边的数字                                                                                                                                                                                                                             |
+| region     | 对象存储桶的地区，[参见文档](https://cloud.tencent.com/document/product/436/6224)                                                                                                                                                                            |
 
 :::info 提示 The directory does not exist
-如果首次执行 `delete -r -f /` 报错提示`The directory does not exist`(文件目录不存在的话)，可以先通过腾讯云的后台上传一个文件，再重新执行 GitHub Actions 就可以了。
+如果首次执行报错提示`The directory does not exist`(文件目录不存在的话)，可以先通过腾讯云的后台上传一个文件，再重新执行 GitHub Actions 就可以了。
 
 :::
 最终，以我的项目为例：
