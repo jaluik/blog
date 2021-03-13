@@ -16,6 +16,12 @@ module.exports = {
       },
       items: [
         {
+          to: 'docs/sourceCode/redux',
+          activeBasePath: 'docs',
+          label: '前端漫谈',
+          position: 'left',
+        },
+        {
           to: 'docs/server/gitActionsDeploy',
           activeBasePath: 'docs',
           label: '服务器',
