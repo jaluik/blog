@@ -9,7 +9,6 @@ keywords:
 slug: /sourceCode/redux
 ---
 
-A
 ## redux 简介
 
 [ redux](https://redux.js.org/)是一个集中管理JS应用状态的容器，是函数式编程在js中的一个典型应用。
@@ -21,7 +20,6 @@ A
 3. Reducers: 用于通过actions来生成新数据状态的**纯函数** 
 
 ### 主要工作流程
-A
 
 这里有一份关于redux的流程图
 
@@ -46,7 +44,6 @@ A
 
 #### 发布订阅模式
 
-B
 > 发布订阅模式又叫做观察者模式，是一种一(发布者)对多(订阅者)的关系。订阅者会在发布者上面订阅特定的事件，当特定事件触发时，发布者会**自动**通知所有该事件的订阅者。
 
 熟悉*dom操作*前端ers都应该使用过`document.addEventListener('onclick', function)`这类的操作，这就是发布订阅模式的一个实现。其中`document`是发布者，`onclick`是订阅事件, `function`是订阅者。
@@ -60,7 +57,6 @@ const createStore = function(initStates) {
   const listeners = [];
 
 	// 订阅方法
-	B
   const subscribe = function(listener) {
     listeners.push(listener);
   };
@@ -83,7 +79,7 @@ const createStore = function(initStates) {
     changeState
   };
 };
-B
+
 ```
 
 然后我们编写一个Demo来更好的理解这个模型
@@ -109,7 +105,6 @@ store.subscribe(() => {
 
 store.changeState({
   ...store.getState(),
-	B
   info: {
     name: "Jaluik",
     description: "前端👨🏻‍💻"
@@ -121,7 +116,6 @@ store.changeState({
 let newInitState = {
   count: 0
 };
-B
 let newStore = createStore(newInitState);
 
 newStore.subscribe(() => {
@@ -130,7 +124,6 @@ newStore.subscribe(() => {
 });
 
 newStore.changeState({
-	B
   count: newStore.getState().count + 1
 });
 //打印1
@@ -243,5 +236,260 @@ store.changeState({ type: "INCREMENT" }); // 6
 
 所以，我们下一步要拆分`plan`函数。
 
+### 3. 拆分reducer
 
+> 这里我们把`plan`函数重新命名为`reducer`(当然，它就是redux中的reducer)。reducer命名的灵感据说来源于`js`中的 `[].reduce(function reducer(){}, initState)`。到后面你会发现我们的`reducer`和 js中reduce的第一个参数有异曲同工之妙。
+
+我们需要对之前的模型做一些调整
+
+- 不需要调整`createStore`函数
+- 重新组织`reducer`的样式
+- 增加`combineReducers`函数, 可以把多个reducer合并为一个大的reducer。
+- 把changeState函数更名为*dispatch*函数
+
+```javascript
+
+//这个函数的作用在于遍历reducers对象，通过遍历每一个key值来生成一个新的reducer。
+//注意这里面我们约定state的key和reducer的key是一样的。
+function combineReducers(reducers) {
+  const reducerKeys = Object.keys(reducers);
+  const nextState = {};
+  return function combination(state = {}, action) {
+    for (let key of reducerKeys) {
+      const reducer = reducers[key];
+      const previousStateForKey = state[key];
+      const nextStateForKey = reducer(previousStateForKey, action);
+      nextState[key] = nextStateForKey;
+    }
+    return nextState;
+  };
+}
+
+//这是合并后的reducer
+const reducer = combineReducers({
+	key1: reducer1,
+	key2: reducer2
+});
+
+```
+
+使用方法可以配合下面的示例
+
+```javascript
+
+const initState = {
+  counter: {
+    count: 0
+  },
+  info: {
+    name: "jaluik",
+    description: "热爱前端的人"
+  }
+};
+
+function counterReducer(state, action) {
+  switch (action.type) {
+    case "INCREMENT":
+      return {
+        ...state,
+        count: state.count + 1
+      };
+    case "DECREMENT": {
+      return {
+        ...state,
+        count: state.count - 1
+      };
+    }
+    default:
+      return state;
+  }
+}
+
+function infoReducer(state, action) {
+  switch (action.type) {
+    case "SET_NAME":
+      return {
+        ...state,
+        name: action.name
+      };
+    case "SET_DESCRIPTION":
+      return {
+        ...state,
+        description: action.description
+      };
+    default:
+      return state;
+  }
+}
+
+// 注意这里我们让它们的key值和state的key值保持了一致。
+const reducer = combineReducers({
+  counter: counterReducer,
+  info: infoReducer
+});
+
+
+const store = createStore(reducer, initState);
+
+store.subscribe(() => {
+  console.log(`${store.getState().counter.count}`);
+});
+store.subscribe(() => {
+  console.log(
+    `${store.getState().info.name}---${store.getState().info.description}`
+  );
+});
+
+store.dispatch({
+  type: "INCREMENT"
+});
+store.dispatch({
+  type: "DECREMENT"
+});
+store.dispatch({
+  type: "SET_NAME",
+  name: "祁佚"
+});
+store.dispatch({
+  type: "SET_DESCRIPTION",
+  description: "而且热爱后端"
+});
+store.dispatch({
+  type: "INCREMENT"
+});
+
+```
+
+#### 模型总结
+
+这里我们已经拆分了**reducer**的逻辑，把一个巨大的**reducer**拆分成了许多个小的模块，每个模块具有一个key值。
+
+接下来我们来实现中间件(applyMiddleware)
+
+### 4. 增加middleware中间件
+
+> redux的中间件提供了让外部程序能够接触和改写内部state和action 的能力。
+
+比如我们想要能够记录action和state的日志，我们只需要在派发*action*的过程中，添加记录日志的代码
+
+```javascript
+let next = store.dispatch;
+store.dispatch = function dispatchAndLog(action) {
+  console.log('dispatching', action);
+  next(action);
+  console.log('next state', store.getState());
+}
+```
+
+这里重写了*dispatch*函数，这就是中间的作用。
+
+
+首先，在写中间件之前，为了我们的例子和redux的用法保持一致，这里我们做一个细微的改动
+
+- 调用createStore触发一次内部的*dispatch*
+
+完整的代码如下
+
+```javascript
+function createStore(reducer, initState) {
+  let state = initState;
+  let listeners = [];
+
+  function subscribe(listener) {
+    listeners.push(listener);
+  }
+
+  function getState() {
+    return state;
+  }
+  function dispatch(action) {
+    state = reducer(state, action);
+    for (let listener of listeners) {
+      listener();
+    }
+  }
+  // 用于传递初始化的值， 因为每个reducer内部需要定义一个初始化值
+  dispatch({ type: Symbol() });
+
+  return {
+    getState,
+    dispatch,
+    subscribe
+  };
+}
+
+```
+
+实际使用过程中，每一个middleware都是一个高阶函数，依次接收 store => 下一个middleware，并最后返回一个dispatch函数。store和middleware参数由我们写的*applyMiddleware*来自动注入参数
+
+接下来我们定义applyMiddleware函数
+
+```javascript
+
+// 主要作用是应用多个中间件，然后改变原来的dispatch函数
+const applyMiddleware = function(...middlewares) {
+  return function rewriteCreateStoreFunc(oldcreateStore) {
+    return function(reducer, initstate) {
+      const store = oldcreateStore(reducer, initstate);
+      const chain = middlewares.map(middleware => middleware(store));
+      let dispatch = store.dispatch;
+			// 这里有一个逆序的过程
+      chain.reverse().map(middleware => {
+        dispatch = middleware(dispatch);
+      });
+      store.dispatch = dispatch;
+      return store;
+    };
+  };
+};
+
+```
+
+最后来看一下如何使用*applyMiddleware*
+
+```javascript
+
+const finalCreateMiddleware = (reducer, initState, rewriteCreateStoreFunc) => {
+  if (rewriteCreateStoreFunc) {
+    const newCreateStore = rewriteCreateStoreFunc(createStore);
+    return newCreateStore(reducer, initState);
+  }
+  return createStore(reducer, initState);
+};
+
+// 最终用法
+const exceptionMiddleware = store => next => action => {
+  try {
+    next(action);
+    console.log("错误报告中间件");
+  } catch (err) {
+    console.log("错误报告: ", err);
+  }
+};
+const timeMiddleware = store => next => action => {
+  console.log("time", new Date().getTime());
+  next(action);
+};
+
+const rewriteCreateStoreFunc = applyMiddleware(
+  exceptionMiddleware,
+  timeMiddleware
+);
+const store = finalCreateMiddleware(
+  counterReducer,
+  initState,
+  rewriteCreateStoreFunc
+);
+store.subscribe(() => {
+  console.log(store.getState());
+});
+
+store.dispatch({ type: "INCREMENT" });
+store.dispatch({ type: "INCREMENT" });
+store.dispatch({ type: "INCREMENT" });
+store.dispatch({ type: "INCREMENT" });
+
+```
+
+完结~
 
