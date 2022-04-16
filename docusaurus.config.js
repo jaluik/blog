@@ -17,19 +17,19 @@ module.exports = {
       items: [
         {
           to: 'docs/frontEnd/sourceCode/redux',
-          activeBasePath: 'docs',
+          activeBasePath: 'docs/frontEnd',
           label: '前端漫谈',
           position: 'left',
         },
         {
           to: 'docs/backEnd/python/pythonProxyPool',
-          activeBasePath: 'docs',
+          activeBasePath: 'docs/backEnd',
           label: '后端浅析',
           position: 'left',
         },
         {
           to: 'docs/operations/gitActionsDeploy',
-          activeBasePath: 'docs',
+          activeBasePath: 'docs/operations',
           label: '运维之路',
           position: 'left',
         },
