@@ -7,7 +7,7 @@ keywords:
   - github
   - github actions
   - 腾讯云
-slug: /server/gitActionsDeploy
+slug: /operations/gitActionsDeploy
 ---
 
 ## 项目介绍

@@ -6,7 +6,7 @@ description: python代理池爬虫
 keywords:
   - python
   - 代理池
-slug: /server/pythonProxyPool
+slug: /backEnd/python/pythonProxyPool
 ---
 
 ## 项目准备

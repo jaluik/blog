@@ -16,18 +16,23 @@ module.exports = {
       },
       items: [
         {
-          to: 'docs/sourceCode/redux',
+          to: 'docs/frontEnd/sourceCode/redux',
           activeBasePath: 'docs',
           label: '前端漫谈',
           position: 'left',
         },
         {
-          to: 'docs/server/gitActionsDeploy',
+          to: 'docs/backEnd/python/pythonProxyPool',
           activeBasePath: 'docs',
-          label: '服务器',
+          label: '后端浅析',
           position: 'left',
         },
-        // { to: 'blog', label: 'Blog', position: 'left' },
+        {
+          to: 'docs/operations/gitActionsDeploy',
+          activeBasePath: 'docs',
+          label: '运维之路',
+          position: 'left',
+        },
         {
           href: 'https://github.com/jaluik',
           label: 'GitHub',

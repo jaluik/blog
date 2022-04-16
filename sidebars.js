@@ -1,8 +1,11 @@
 module.exports = {
   firstSidebar: {
-    ['源码学习']: ['sourceCode/redux'],
+    ['源码学习']: ['frontEnd/sourceCode/redux'],
     ['工具集']: ['tools/vscode'],
     // Features: ['mdx'],
   },
-  secondSidebar: ['server/gitActionsDeploy', 'server/pythonProxyPool'],
+  secondSidebar: {
+    ['python']: ['backEnd/python/pythonProxyPool'],
+  },
+  thirdSidebar: ['operations/gitActionsDeploy'],
 }
