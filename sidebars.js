@@ -7,5 +7,5 @@ module.exports = {
   secondSidebar: {
     ['python']: ['backEnd/python/pythonProxyPool'],
   },
-  thirdSidebar: ['operations/gitActionsDeploy'],
+  thirdSidebar: ['operations/gitActionsDeploy', 'operations/k8s'],
 }
