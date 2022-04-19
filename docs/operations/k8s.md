@@ -55,7 +55,7 @@ Mac 安装命令： `brew install kubectl`
 6.  使用 minikube 暴露 LoadBalancer server;： `minikube tunnel`
 7.  访问 `127.0.0.1:8080`就可以获取访问结果啦
 
-## K8s 中的 pod
+## Pod 介绍
 
 K8s 中的 pod 是最小的基本单位，可以由多个容器组成。
 
@@ -173,3 +173,129 @@ spec:
 ```
 
 ### 注解 Pod
+
+注解类似于标签，主要用于工具使用，可以容纳更多信息。
+
+yaml 文件中配置注解：
+
+```yaml
+# ....
+metadata:
+  # ....
+  annotations:
+    imageRegistry: 'https://hub.docker.com/'
+```
+
+为已有节点添加注解：`kubectl annotate pod <pod name> <key>=<value>`
+
+查看注解：`kubectl describe pod <pod name>`返回的`Annotations`可以看到添加到注解
+
+### 命名空间
+
+k8s 中的命名空间为对象名称提供了一个作用域，便于多用户使用同一`k8s`集群时，资源间在不同的命名空间中互不影响。
+
+查看命名空间： `kubectl get ns`， 其中 ns 为`namespace`的简称
+
+指定命名空间查看 pod： `kubectl get po -n <namespace name>`, `-n` 可以写作`--namespace`
+
+创建命名空间：
+
+- 使用命令行： `kubectl create namespace <name>`
+- 定义`yaml`文件创建:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: custom-space
+```
+
+如果想在指定的命名空间中创建资源： `kubectl create -f <filename>.yaml -n <namespace name>` 这里`-n <namespace name>`就是指定命名空间
+
+### 停止和移除 Pod
+
+指定单个或多个 Pod 删除: `kubectl delete po <name1> <name2> <name3>` 通过空格来分隔
+
+根据标签名称来产出 Pod： `kubectl delete po -l <label name>=<label value>`
+
+删除整个命名空间会删除空间内的所有 Pod： `kubectl delete ns <namespace name>`
+
+可以删除所有 pod 和 service 资源： `kubectl delete all --all` 第一个 all 表示删除所有类型，第二个表示删除所有资源实例
+
+## Pod 管理
+
+### Pod 健康管理
+
+k8s 中可以使用存活探针（liveness probe）来检测 Pod 内部运行是否正常，如果探测失败，k8s 会定期重启容器。
+
+探针有局限性： 如果节点挂了，就无法重启 pod 了。
+
+有 3 种探测方式：
+
+- HTTP GET 请求探针： 检测服务器是否响应 2xx、3xx 的状态码
+- TCP 套接子探针：检测是否可以建立 TCP 连接
+- Exec 探针：检测是否可以在容器内执行任意命令
+
+#### HTTP 存活探针
+
+定义一个带有存活探针的 Pod
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-liveness
+spec:
+  containers:
+    - image: luksa/kubia-unhealthy
+      name: kubia
+      livenessProbe:
+        httpGet:
+          path: /
+          port: 8080
+```
+
+创建完成后，观察生成的`kubia-liveness`这个 pod，可以看到他的重启次数
+
+`kubectl logs <pod name> --previous` 可以看到`pod`上一次重启的日志
+
+这里我们通过`kubectl describe po <pod name>` 可以看到
+
+- `Containers > Last State`中显示了之前是因为 137 状态码而重启容器。ps: 137 是 128 + x， 这里 x=9，表示是外部强行终止`SIGKILL`
+
+- `Liveness: http-get http://:8080/ delay=0s timeout=1s period=10s #success=1 #failure=3` 表示可以在创建文件中定义这些探针的参数，比如延时、超时时间等。
+- 最后设置第一次初始延时用于等待容器启动： `initialDelaySeconds: 15s`表示第一次探测时延迟 15 秒。
+
+### ReplicationController
+
+`ReplicationController`简称`rc`的工作是确保 pod 的数量始终于其标签选择器匹配
+
+一个`ReplicationController`由 3 部分组成：
+
+- `label selector` 标签选择器
+- `replica count` 副本个数
+- `pod template` pod 模板
+
+创建一个 rc
+
+```yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  selector:
+    app: kubia  # 一般不指定会从template获取
+  template:
+    metadata:
+      labels:
+        app: kubia
+    spec:
+      containers:
+        - image: kubia
+          image: luksa/kubia
+          ports:
+            - containerPort: 8080
+
+```
