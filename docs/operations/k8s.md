@@ -276,7 +276,7 @@ spec:
 - `replica count` 副本个数
 - `pod template` pod 模板
 
-创建一个 rc
+### 创建一个 rc
 
 ```yaml
 apiVersion: v1
@@ -299,3 +299,19 @@ spec:
             - containerPort: 8080
 
 ```
+
+然后执行命令创建： `kubectl create -f <filename>`
+
+然后查看 pods: `kubectl get pods` 可以看到刚才创建的 pods 有 3 个。
+
+查看所有的`ReplicationController`命令： `kubectl get rc`
+
+查看某个`ReplicationController`命令： `kubectl describe rc <rc name>`
+
+#### 编辑已生成的 rc
+
+编辑已生成的 rc 模板只会影响之后的模板
+
+执行命令： `kubectl edit rc <rc name>`可以打开 yaml 文件的编辑模式
+
+扩容： `kubectl scale rc <rc name> --replicas=<number>` 可以更改`rc`的副本个数
