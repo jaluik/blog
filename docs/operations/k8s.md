@@ -266,7 +266,7 @@ spec:
 - `Liveness: http-get http://:8080/ delay=0s timeout=1s period=10s #success=1 #failure=3` 表示可以在创建文件中定义这些探针的参数，比如延时、超时时间等。
 - 最后设置第一次初始延时用于等待容器启动： `initialDelaySeconds: 15s`表示第一次探测时延迟 15 秒。
 
-### ReplicationController
+### ReplicationController（rc）
 
 `ReplicationController`简称`rc`的工作是确保 pod 的数量始终于其标签选择器匹配
 
@@ -276,7 +276,7 @@ spec:
 - `replica count` 副本个数
 - `pod template` pod 模板
 
-### 创建一个 rc
+#### 创建一个 rc
 
 ```yaml
 apiVersion: v1
@@ -315,3 +315,80 @@ spec:
 执行命令： `kubectl edit rc <rc name>`可以打开 yaml 文件的编辑模式
 
 扩容： `kubectl scale rc <rc name> --replicas=<number>` 可以更改`rc`的副本个数
+
+不保留 pod 删除 rc: `kubectl delete rc <rc name>`
+
+保留 pod 删除 rc: `kubectl delete rc <rc name> --cascade=false`
+
+### ReplicaSet（rs）
+
+> `ReplicaSet`作用是用于替代`ReplicationController`, 拥有更强的标签选择能力
+
+定义`ReplicaSet`仅需要将之前`rc`创建的 yaml 文件中的`kind`字段值从`ReplicationController`替换为`ReplicaSet`，并且需要修改`apiVersion`以及`selector`
+
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kubia
+  template:
+  #......
+```
+
+`rs`可以定义更为强大的标签选择器，比如：
+
+```yaml
+selector:
+  matchExpressions:
+    - key: app
+      operator: In
+      values:
+        - kubia
+        - kubia1
+```
+
+表示了 labels 为`app`的标签必须值等于`kubia`或者`kubia1`
+
+删除类似于 rc: `kubectl delete rs <name>`
+
+### DaemonSet（ds）
+
+> `DaemonSet`作用是在集群的每一个节点上运行一个`pod`
+
+创建一个`DaemonSet`（这里我们需要节点必须有`disk=ssd`标签才会生成 ds）：
+
+```yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ssd-monitor
+spec:
+  selector:
+    matchLabels:
+      app: ssd-monitor
+  template:
+    metadata:
+      labels:
+        app: ssd-monitor
+    spec:
+      nodeSelector:
+        disk: ssd
+      containers:
+        - name: main
+          image: luksa/ssd-monitor
+```
+
+查看 ds： `kubectl get ds`
+
+查看节点信息： `kubectl get node`
+
+给当前节点打标签：`kubectl label node <node name> <label>=<value>`
+
+如果给拥有`ds`的节点更改了标签，使得其不满足`ds`的规则，那么该节点会被删除。
+
+### Job
