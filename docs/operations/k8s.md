@@ -392,3 +392,72 @@ spec:
 如果给拥有`ds`的节点更改了标签，使得其不满足`ds`的规则，那么该节点会被删除。
 
 ### Job
+
+`k8s`中的`job`用于统一管理`pod`， 确保`pod`完成任务后退出。相对于 rs 和 rc，任务不需要保持一直运行，而是运行结束后退出。
+
+定义一个简单的 job：
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: batched-job
+spec:
+  template:
+    metadata:
+      labels:
+        app: batch-job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: main
+          image: luksa/batch-job
+```
+
+查看 job： `kubectl get jobs`
+查看 job 相关的 pod： `kubectl get po`
+
+如果需要一个 pod 依次运行多次，需要在 yaml 文件中`spec > completions: 5` 指定了 pod 创建并运行完成后会创建第二个 pod，直到 5 个 pod 都运行完毕。
+
+如果需要同时运行 n 个 pod，可以使用`parallelism`，示例：
+
+```yaml
+#....
+spec:
+  completions: 5 # 需要完成5个job
+  parallelism: 2 # 同时运行2个job
+  template:
+    # some value...
+```
+
+更改运行中 job 的`parallelism`属性： `kubectl scale job <name> --replicas 3`
+
+### CronJob
+
+即 linux 中的定时任务
+
+创建一个`cronjob`:
+
+```yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: batch-job-every-fifteen-minutes
+spec:
+  schedule: '0,15,30,45 * * * *'
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: periodic-batch-job
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: main
+              image: luksa/batch-job
+```
+
+## Pod 通信 （Service）
+
+> Service 服务通过暴露一个固定的 ip 地址和端口来开放外部访问 pod 的入口
