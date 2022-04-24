@@ -461,3 +461,147 @@ spec:
 ## Pod 通信 （Service）
 
 > Service 服务通过暴露一个固定的 ip 地址和端口来开放外部访问 pod 的入口
+
+创建一个 Service:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: kubia
+```
+
+查看创建的 Service: `kubectl get svc`
+
+在已有的的 pod 节点执行 curl 命令: `kubectl exec <pod name> -- curl -s <svc ip address>`
+
+这里`--`代表了命令行参数的结束，这就使得`-s`表示不是`kubectl exec`的参数
+
+如果希望特定的客户端每次访问同一个 pod： 可以在配置文件中指定：`spec > sessionAffinity: ClientIP`。该属性的默认值为`None`
+
+使用具名的端口号：
+
+1. pod 中定义端口名称
+
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - name: kubia
+      ports:
+        - name: http
+          containerPort: 8080
+        - name: https:
+          containerPort: 8443
+
+```
+
+2. 在服务的 spec 中引用端口
+
+```yaml
+apiVersion: v1
+kind: Service
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: http  # 指代了Pod中定义的8080
+    - name: https:
+      port: 443
+      targetPort: https # 指代了Pod中定义的8443
+
+```
+
+### 服务发现
+
+1. 通过启动的 pod 查看环境变量: `kubectl exec <pod name> env`
+2. 通过 dns 发现： 由于在每个 pod 中，k8s 使用 k8s 创建的`kube-dns`的 pod 作`dns`解析，所以可以在 pod 内部使用`<pod name>.<namespace>.svc.cluster.local`来访问其他 service
+
+### 连接集群外部服务
+
+> endpoint 是连接 service 和 pod 之间的一种资源
+
+查看 endpoint 信息： `kubectl get endpoint <svc name>`
+
+如果服务没有成功获得选择器设置的 pod，则不会自动创建 endpoint 资源。
+
+连接外部服务有两种方法
+
+1. 创建 endpoints 资源，指定服务重定向地址
+
+示例，创建一个没有选择器的 service：
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-service
+spec:
+  ports:
+    - port: 80
+```
+
+再手动创建 endpoint 资源
+
+```yaml
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: external-service # 名字必须与service一致
+subsets:
+  - addresses:
+      - ip: 11.11.11.11
+      - ip: 22.22.22.22
+    ports:
+      - port: 80 # 目标端口
+```
+
+2. 配置 cname 的 dns 服务
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-service
+spec:
+  type: ExternalName
+  externalName: some-api.some-company.com
+  ports:
+    - port: 80
+```
+
+服务完成后可以通过`external-service.default.svc.cluster.local`来访问外部域名
+
+### 服务暴露给外部客户端
+
+可以使用的方式有下面 3 种：
+
+1. 服务类型设置为`NodePort`：每个集群节点都打开一个端口。
+2. 服务类型设置为`LoadBalance`
+3. 创建一个`Ingress`资源
+
+#### 创建 NodePort
+
+文件定义如下
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia-nodeport
+spec:
+  type: NodePort # 注意这里定义了类型
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30123
+  selector:
+    app: kubia
+```
