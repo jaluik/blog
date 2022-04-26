@@ -587,7 +587,7 @@ spec:
 2. 服务类型设置为`LoadBalance`
 3. 创建一个`Ingress`资源
 
-#### 创建 NodePort
+#### 使用 NodePort
 
 文件定义如下
 
@@ -604,4 +604,49 @@ spec:
       nodePort: 30123
   selector:
     app: kubia
+```
+
+#### 使用 LoadBalance
+
+文件定义如下
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia-loadbalancer
+spec:
+  type: LoadBalancer # 注意这里定义了类型
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: kubia
+```
+
+#### 使用 Ingress
+
+> 对于每个 LoadBalancer 都需要自己的负载均衡器，以及独有的公有 IP 地址。而 Ingress 只需要一个公网 IP 就能为许多服务提供访问。
+
+首先在`minikube`上启用 Ingress: `minikube addons enable ingress`
+
+创建 Ingress 资源:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kubia
+spec:
+  rules:
+    - host: kubia.example.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: kubia-nodeport
+                port:
+                  number: 80
 ```
