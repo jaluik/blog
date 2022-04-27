@@ -650,3 +650,37 @@ spec:
                 port:
                   number: 80
 ```
+
+### Pod 的就绪信号
+
+> 就绪探针用于检测 pod 是否启动完成，如果未通过检测，则客户端不会重定向该 pod。与存活探针不同在于： 对于就绪探针，如果容器未通过准备检查，容器不会被终止或重启应用
+
+向一个 pod 添加就绪探针：`kubectl edit rc <rc name>`
+
+修改 yaml 文件：
+
+```yaml
+#....
+spec:
+  #...
+  template:
+    containers:
+      - name: kubia
+        image: luksa/kubia
+        readinessProbe: # 这里开始就是就绪指针
+          exec:
+            command:
+              - ls
+              - /var/ready
+```
+
+创建一个 headless 服务：
+
+```yaml
+#...
+kind: Service
+#...
+spec:
+  clusterIP: None
+  # ....
+```
