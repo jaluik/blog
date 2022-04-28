@@ -1,3 +1,10 @@
 {
-  "cSpell.words": ["kube", "kubia", "loadbalancer", "luksa", "nodeport"]
+  "cSpell.words": [
+    "htdocs",
+    "kube",
+    "kubia",
+    "loadbalancer",
+    "luksa",
+    "nodeport"
+  ]
 }

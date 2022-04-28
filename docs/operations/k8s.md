@@ -684,3 +684,65 @@ spec:
   clusterIP: None
   # ....
 ```
+
+## 卷（volume）
+
+> 卷用于在多个 Pod 中共享挂载的数据
+
+### emptyDir 卷
+
+声明周期和 pod 想关联，如果 pod 被删除，卷的内容就会消失
+
+使用 emptyDir 的例子：
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fortune
+spec:
+  containers:
+    - image: luksa/fortune
+      name: html-generator
+      volumeMounts:
+        - name: html
+          mountPath: /var/htdocs
+    - image: nginx:alpine
+      name: web-server
+      volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+          readOnly: true # 卷只读
+      ports:
+        - containerPort: 80
+          protocol: TCP
+  volumes:
+    - name: html
+      emptyDir: {}
+```
+
+如果我们想 emptyDir 挂载到内存中，可以修改为
+
+```yaml
+# same as before
+volumes:
+  - name: html
+    emptyDir:
+      medium: Memory # 内存作为介质
+```
+
+### Git 仓库作为卷
+
+k8s 在创建 pod 时会自动拉取相关的仓库内容
+
+创建 Git 卷的配置文件:
+
+```yaml
+# same as before
+volumes:
+  - name: html
+    gitRepo:
+      repository: <repository url>
+      revision: master # use master branch
+      directory: . # 如果设置了这个，最外层目录直接就是仓库内容的根目录。
+```
