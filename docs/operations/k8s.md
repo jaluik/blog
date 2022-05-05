@@ -746,3 +746,9 @@ volumes:
       revision: master # use master branch
       directory: . # 如果设置了这个，最外层目录直接就是仓库内容的根目录。
 ```
+
+Git 卷不会自动同步，如果想用最新版的 git 仓库内容，需要删除之前的 pod，然后创建新的 pod。或者使用`git syn`相关的镜像来做仓库的同步
+
+### HostPath 卷
+
+> 使用 hostPath 可以访问工作节点文件系统的文件，是一种持久性存储。
