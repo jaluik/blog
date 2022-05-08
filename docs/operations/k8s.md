@@ -749,6 +749,45 @@ volumes:
 
 Git 卷不会自动同步，如果想用最新版的 git 仓库内容，需要删除之前的 pod，然后创建新的 pod。或者使用`git syn`相关的镜像来做仓库的同步
 
-### HostPath 卷
+### 持久存储卷
 
 > 使用 hostPath 可以访问工作节点文件系统的文件，是一种持久性存储。
+> 这里我们主要是指网络存储（NAS），首先通过管理员创建持久卷（PV）然后创建持久卷声明（PVC）来引用创建的持久卷
+> 持久卷（PV）不属于任何命名空间，这点区别于 pod 和持久卷声明（PVC）
+
+创建一个持久卷
+
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv
+spec:
+  capacity:
+    storage: 1Gi # 定义大小
+  accessModes:
+    - ReadWriteOnce # 定义为被单个客户端挂载为读写模式
+    - ReadOnlyMany # 或被多个客户端挂载为只读模式
+  persistentVolumeReclaimPolicy: Retain # 被释放后PV将会被保留
+  gcePersistentDisk: # 这个需要动态变化，指定底层的持久卷
+    pdName: mongodb
+    fsType: ext4
+```
+
+现在如果我们需要部署一个持久化存储的 pod，将要用到之前创建的持久卷。这里我们必须通过持久卷声明的方式来引用，声明一个持久卷和创建一个 pod 是相对独立的过程。
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+spec:
+  resources:
+    requests:
+      storage: 1Gi # 满足之前的配置
+    accessMode:
+      - ReadWriteOnce # 满足之前的配置
+    storageClassName: ''
+```
+
+创建好声明以后，k8s 就会找到适当的持久卷并将其绑定到声明。通过`kubectl get pvc`和`kubectl get pv`可以查看声明绑定的状态
