@@ -791,3 +791,40 @@ spec:
 ```
 
 创建好声明以后，k8s 就会找到适当的持久卷并将其绑定到声明。通过`kubectl get pvc`和`kubectl get pv`可以查看声明绑定的状态
+
+然后在`pod`中引用持久卷声明（PVC）:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongodb
+spec:
+  containers:
+    - image: mongo
+      name: mongodb
+      volumeMounts:
+        - name: mongodb-data
+          mountPath: /data/db
+      ports:
+        - containerPort: 27017
+          protocol: TCP
+  volumes:
+    - name: mongodb-data
+      persistentVolumeClaim:
+        claimName: mongodb-pvc
+```
+
+`storageClass`简称`sc`可以作为持久卷的动态卷配置
+
+## 配置文件（ConfigMap 和 Secret）
+
+在 Dockerfile 中关于`ENTRYPOINT`和`CMD`:
+
+- `ENTRYPOINT`: 定义容器启动时的被调用的可执行程序
+- `CMD`: 指定传给 ENTRYPOINT 的参数
+
+在 Dockerfile 中关于`shell`和`exec`的区别:
+
+- `shell`会在子进程中执行命令
+- `exec`会直接执行进程
