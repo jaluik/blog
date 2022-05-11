@@ -828,3 +828,78 @@ spec:
 
 - `shell`会在子进程中执行命令
 - `exec`会直接执行进程
+
+在`k8s`中覆盖命令行参数：
+
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - image: some/images
+      command: ['/bin/command'] # 相当于容器中的ENTRYPOINT
+      args: ['arg1', 'arg2', 'arg3'] # 相当于容器中的CMD
+```
+
+在`k8s`中添加容器的环境变量：
+
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - image: some/images
+      env:
+        - name: INTERVAL
+          value: '30'
+        # - name: SECOND_VAR
+        #   value: "$(INTERVAL)"  可以引用之前的变量
+```
+
+### 创建 ConfigMap
+
+创建方式：
+
+- 直接通过命令行创建:`kubectl create configmap <configmap name> --from-literal=<key>=<value>`, 多次使用`--from-literal`可以创建多条数据
+- 通过文件创建： `kubectl create configmap <configmap name> --from-file=<file path>`，, 多次使用`--from-file`可以从多个文件中创建。 **注意： 这里键是文件的名字，值是文件的内容**
+- 通过 yaml 文件创建
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+data:
+  sleep-interval: '25'
+metadata:
+  name: fortune-config
+```
+
+在 Pod 中引用 ConfigMap 的单个值，使用`valueFrom`：
+
+```yaml
+#...before
+spec:
+  containers:
+    - image: luksa/fortune:env
+      name: html-generator
+      env:
+        - name: INTERVAL # 定义key的名字
+          valueFrom: # 指定数据来源
+            configMapKeyRef:
+              name: fortune-config # configMap的名字
+              key: sleep-interval # configMap的key值
+      # args: ["$(INTERVAL)"]  可以在args中引用上面定义的变量名
+```
+
+在 Pod 中引用 ConfigMap 的所有值，使用`envFrom`：
+
+```yaml
+#...before
+spec:
+  containers:
+    - image: luksa/fortune:env
+      name: html-generator
+      envFrom:
+        - prefix: CONFIG_ # 可选值，会为每个key自动加前缀
+          configMapRef:
+            name: my-config-map
+```
