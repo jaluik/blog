@@ -903,3 +903,53 @@ spec:
           configMapRef:
             name: my-config-map
 ```
+
+将 ConfigMap 作 Volumes 映射到 pod 中，
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fortune-config-map-volume
+spec:
+  containers:
+    - image: luksa/fortune:env
+      name: html-generator
+      volumeMounts:
+        - name: html
+          mountPath: /var/htdocs
+    - image: nginx:alpine
+      name: web-server
+      volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+      ports:
+        - containerPort: 80
+          protocol: TCP
+  volumes:
+    - name: config
+      configMap:
+        name: fortune-config
+        # defaultMode: '6600'  # 可以配置特点的文件权限
+        # - key: my-nginx-config.conf  如果加上这两句话会只映射key代表的文件
+        #   path: gzip.conf
+```
+
+ps： 这里需要注意，如果使用此方法那么映射的文件夹原本的内容会被隐藏。此处`/etc/nginx/conf.d`目录就只会有 volumes 对应的文件。
+
+如果想只挂载特定的文件, 可以使用`subPath`属性。
+
+```yaml
+spec:
+  containers:
+    - image: some/image
+      volumeMounts:
+        - name: my-volume
+          mountPath: /etc/someConfig.conf # 挂载的文件名
+          subPath: my-config.conf # ConfigMap中的key， 相当于被重命名为了 someConfig.conf
+```
+
+### 创建 Secret
+
+查看`Secrets`： `kubectl get secrets`
