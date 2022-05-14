@@ -952,4 +952,57 @@ spec:
 
 ### 创建 Secret
 
-查看`Secrets`： `kubectl get secrets`
+查看： `kubectl get secrets`
+
+创建： `kubectl create secret generic <secret name> --from-file=<key filename> --from-file=<cert filename> --from-file=<file name>`
+
+查看`secret`的配置文件: `kubectl get secret <secret name> -o yaml`, 可以看到 secret 文件都是使用 Base64 编码过的
+
+使用 Secret 作为 volume 映射的例子：
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fortune-https
+spec:
+  containers:
+    - image: luksa/fortune:env
+      name: html-generator
+      env:
+        - name: INTERVAL
+          valueFrom:
+            configMapKeyRef:
+              name: fortune-config
+              key: sleep-interval
+      volumeMounts:
+        - name: html
+          mountPath: /var/htdocs
+    - image: nginx:alpine
+      name: web-server
+      volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+          readOnly: true
+        - name: config
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+        - name: certs
+          mountPath: /etc/nginx/certs/
+          readOnly: true
+      ports:
+        - containerPort: 80
+        - containerPort: 443
+  volumes:
+    - name: html
+      emptyDir: {}
+    - name: config
+      configMap:
+        name: fortune-config
+        items:
+          - key: my-nginx-config.conf
+            path: https.conf
+    - name: certs
+      secret:
+        secretName: fortune-https
+```
