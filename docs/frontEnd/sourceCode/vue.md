@@ -6,6 +6,7 @@ description: vue源码相关的细节
 keywords:
   - vue
   - 源码
+  - 实现一个vue
 slug: /frontEnd/sourceCode/vue
 ---
 
@@ -195,4 +196,418 @@ effect(function effectFn1() {
   // 在effectFn1中读取foo属性
   temp1 = obj.foo
 })
+```
+
+如果用之前的源码执行这个示例代码会有一个问题，就是`obj.foo`取值时的依赖函数会被错误的引用到`effectFn2`中，因为`activeEffect`没有复原机制，所以我们需要一个栈来解决这个问题。
+
+```js
+let activeEffect = null
+const effectStack = []
+
+const effect = (fn) => {
+  const effectFn = () => {
+    cleanup(effectFn)
+    activeEffect = effectFn
+    effectStack.push(effectFn)
+    fn()
+    effectStack.pop()
+    activeEffect = effectStack[effectStack.length - 1]
+  }
+  effectFn.deps = []
+  effectFn()
+}
+```
+
+### 解决无限循环调用问题
+
+> 针对下面的代码，会无限调用下去然后报错。
+
+```js
+const data = { foo: 1 }
+const obj = new Proxy(data, {
+  /*...*/
+})
+
+effect(() => {
+  obj.foo = obj.foo + 1
+})
+```
+
+原因在于：`obj.foo`读取时会把 effect 内的函数作为依赖项，在`obj.foo`赋值时，又会调用这个函数进行赋值，这样就会层层循环调用下去
+
+解决思路：如果`trigger`触发的函数和当前函数相同则不再执行当前函数
+
+```js
+function trigger(target, key) {
+  const depsMap = bucket.get(target)
+  if (!depsMap) return
+  const deps = depsMap.get(key)
+  if (!deps) return
+  const effectToRun = new Set()
+  deps &&
+    deps.forEach((item) => {
+      if (activeEffect !== item) {
+        effectToRun.add(item)
+      }
+    })
+  effectToRun.forEach((item) => item())
+}
+```
+
+### 增加用户自定义的调度器
+
+> 很多时候我们并不希望 `effect`中的函数马上执行，而是传入调度器来控制 `effect` 中的函数执行时机
+
+比如
+
+```js
+const data = { foo: 1 }
+const obj = new Proxy(data, {
+  /*...*/
+})
+effect(() => {
+  console.log(obj.foo)
+})
+
+obj.foo++
+
+console.log('执行了')
+```
+
+正常的执行顺序为：
+
+```
+1
+2
+'执行了'
+```
+
+我们希望能用户自定义执行顺序，比如
+
+```
+1
+"执行了"
+2
+```
+
+首先需要用户可以在 effect 函数中传入自定义的配置项
+
+```js
+function effect(fn, options = {}) {
+  const effectFn = () => {
+    //...before
+  }
+  effectFn.options = options
+  effectFn.deps = []
+  effectFn()
+}
+```
+
+在`trigger`触发时，将控制权交给用户
+
+```js
+function trigger(target, key) {
+  //...before
+  effectToRun.forEach((item) => {
+    if (item.options.scheduler) {
+      item.options.scheduler(item)
+    } else {
+      item()
+    }
+  })
+}
+```
+
+用户端的使用：
+
+```js
+const data = { foo: 1 }
+const obj = new Proxy(data, {
+  /*...*/
+})
+effect(
+  () => {
+    console.log(obj.foo)
+  },
+  {
+    scheduler(fn) {
+      setTimeout(fn)
+    },
+  }
+)
+
+obj.foo++
+
+console.log('执行了')
+```
+
+### 支持 lazy
+
+> 有时候 effect 函数并不想立即执行，而是在需要的时候才执行。
+
+比如我们想支持`computed`属性，使用方式：
+
+```js
+const data = { foo: 1, bar: 2 }
+const obj = new Proxy(data, {
+  /*...*/
+})
+
+const sumRes = computed(() => obj.foo + obj.bar)
+console.log(sumRes.value) //3
+```
+
+改造之前的代码：
+
+```js
+function computed(getter) {
+  let value
+  // 如果监听的值发生了变化，那么我们用这个来标识需要重新计算
+  let dirty = true
+  const effectFn = effect(getter, {
+    lazy: true,
+    scheduler: () => {
+      dirty = true
+    },
+  })
+  const obj = {
+    get value() {
+      if (dirty) {
+        value = effectFn()
+        dirty = false
+      }
+      return value
+    },
+  }
+  return obj
+}
+
+// effect函数需要改造支持lazy参数
+function effect(fn, options = {}) {
+  const effectFn = () => {
+    cleanup(effectFn)
+    activeEffect = effectFn
+    effectStack.push(effectFn)
+    const res = fn()
+    effectStack.pop()
+    activeEffect = effectStack[effectStack.length - 1]
+    return res
+  }
+  effectFn.options = options
+  effectFn.deps = []
+  if (!options.lazy) {
+    effectFn()
+  }
+  return effectFn
+}
+```
+
+改造之后还有一个小缺陷， 比如下面的代码
+
+```js
+const sumRes = computed(() => obj.foo + obj.bar)
+effect(() => {
+  console.log(sumRes.value) //3
+})
+```
+
+我们期望在 sumRes.value 变化时，执行外层的 effect 函数
+
+于是需要改造`computed`函数：
+
+```js
+function computed(getter) {
+  let value
+  // 如果监听的值发生了变化，那么我们用这个来标识需要重新计算
+  let dirty = true
+  const effectFn = effect(getter, {
+    lazy: true,
+    scheduler: () => {
+      dirty = true
+      // 手动触发
+      trigger(obj, 'value')
+    },
+  })
+  const obj = {
+    get value() {
+      if (dirty) {
+        // 手动追踪
+        track(obj, 'value')
+        value = effectFn()
+        dirty = false
+      }
+      return value
+    },
+  }
+  return obj
+}
+```
+
+### 实现 watch
+
+> 有这样的使用场景，监听某个数据的变化，如果数据变化就执行回调。
+
+```js
+watch(obj, (newValue, oldValue) => {
+  console.log('数据变了')
+})
+// 其中watch的第一个参数可以是函数 比如()=> obj.foo
+obj.foo++
+```
+
+```js
+function watch(source, cb) {
+  let getter
+  if (typeof source === 'function') {
+    getter = source
+  } else {
+    getter = () => traverse(source)
+  }
+  let newValue, oldValue
+  const effectFn = effect(() => getter(), {
+    lazy: true,
+    scheduler: () => {
+      newValue = effectFn()
+      cb(newValue, oldValue)
+      oldValue = newValue
+    },
+  })
+
+  oldValue = effectFn()
+}
+
+function traverse(value, seen = new Set()) {
+  if (typeof value !== 'object' || value === null || seen.has(value)) return
+  // seen用于避免循环引用导致的死循环
+  seen.add(value)
+  for (const key in value) {
+    // value[keu] 用于响应式的注册监听器
+    traverse(value[key], seen)
+  }
+  return value
+}
+```
+
+下面我们支持一些其他的配置参数，使用方式
+
+```js
+watch(
+  obj,
+  (newValue, oldValue) => {
+    console.log('数据变了')
+  },
+  {
+    // immediate表示当前需要立即执行
+    immediate: true,
+    // post表示同步完成后的微任务中执行
+    flush: 'post',
+  }
+)
+// 其中watch的第一个参数可以是函数 比如()=> obj.foo
+obj.foo++
+```
+
+改造 watch 函数：
+
+```js
+function watch(source, cb, options = {}) {
+  let getter
+  if (typeof source === 'function') {
+    getter = source
+  } else {
+    getter = () => traverse(source)
+  }
+  let newValue, oldValue
+
+  const job = () => {
+    newValue = effectFn()
+    cb(newValue, oldValue)
+    oldValue = newValue
+  }
+  const effectFn = effect(() => getter(), {
+    lazy: true,
+    scheduler: () => {
+      if (options.flush === 'post') {
+        Promise.resolve().then(job)
+      } else {
+        job()
+      }
+    },
+  })
+  if (option.immediate) {
+    job()
+  } else {
+    oldValue = effectFn()
+  }
+}
+```
+
+#### 解决竞态问题
+
+如果 watch 中的回调是一个异步回调，当重复执行时回调时会有竞态问题。比如下面的例子：
+
+```js
+let finalData
+watch(obj, async () => {
+  const result = await fetch(obj)
+  finalData = result
+})
+```
+
+如果我们想解决这个竞态问题，可以在回调中提供第三个参数，用于标识过期。使用方式：
+
+```js
+let finalData
+watch(obj, async (newVal, oldValue, onInvalidate) => {
+  let expired = false
+  onInvalidate(() => {
+    expired = true
+  })
+  const result = await fetch(obj)
+  if (!expired) {
+    finalData = result
+  }
+})
+```
+
+然后我们需要改造一下`watch`函数：
+
+```js
+function watch(source, cb, options = {}) {
+  let getter
+  if (typeof source === 'function') {
+    getter = source
+  } else {
+    getter = () => traverse(source)
+  }
+  let newValue, oldValue, cleanup
+
+  function onInvalidate(fn) {
+    cleanup = fn
+  }
+
+  const job = () => {
+    newValue = effectFn()
+    if (cleanup) {
+      cleanup()
+    }
+    cb(newValue, oldValue, onInvalidate)
+    oldValue = newValue
+  }
+  const effectFn = effect(() => getter(), {
+    lazy: true,
+    scheduler: () => {
+      if (options.flush === 'post') {
+        Promise.resolve().then(job)
+      } else {
+        job()
+      }
+    },
+  })
+  if (option.immediate) {
+    job()
+  } else {
+    oldValue = effectFn()
+  }
+}
 ```
