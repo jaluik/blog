@@ -611,3 +611,57 @@ function watch(source, cb, options = {}) {
   }
 }
 ```
+
+## 非原始值的响应式方案
+
+首先介绍一下`Reflect`对象，`Reflect`下的方法和`Proxy`拦截器方法名称基本是一一对应的关系，`Reflect`方法一般有第三个参数，用于指定接收值`receiver`, `receiver`会指定替代 this 的指向
+
+```js
+const obj = {
+  get foo() {
+    return this.foo
+  },
+}
+console.log(Reflect.get(obj, 'foo', { foo: 2 }))
+```
+
+有如下一个 case，其中`p`是`obj`的拦截对象：
+
+```js
+const obj = {
+  foo: 1,
+  get bar() {
+    return this.foo
+  },
+}
+const p = new Proxy(obj, {
+  get(target, key) {
+    track(target, key)
+    return target[key]
+  },
+  set(target, key, newVal) {
+    target[key] = newVal
+    trigger(target, key)
+  },
+})
+effect(() => {
+  console.log(p.bar)
+})
+
+// 不会执行effect
+p.foo++
+```
+
+分析：原因在于`Proxy`中的`get`返回了`this.foo`值，其中`this`执行了原始对象`obj`，因此`effect`中的函数相当于`effect(()=> {console.log(obj.foo)})`，因此我们此时需要使用`Reflect`的第三个参数来调整`this`的指向
+
+```js
+
+const p = new Proxy(obj, {
+  // receiver参数代表谁在读取属性
+  get(target, key, receiver) {
+    track(target, key)
+    return Reflect.get(target, key, receiver)
+  },
+)
+
+```
