@@ -14,4 +14,4 @@ slug: /frontEnd/cssTrick
 
 ## CSS 易错点
 
-- `line-height`是可以继承的，如果父元素的`line-height`设置的是百分比的单位，子元素继承的是父元素的实际`px`值，而不是继承了百分比的值
+- `line-height`是可以继承的，如果父元素的`line-height`设置的是百分比的单位，子元素继承的是父元素的实际`px`值，而不是继承了百分比的值。
