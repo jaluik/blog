@@ -5,6 +5,7 @@ sidebar_label: vim实用技巧
 description: vim实用技巧
 keywords:
   - vim
+  - vim使用
   - vim技巧
 slug: /frontEnd/vim
 ---
