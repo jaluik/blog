@@ -665,3 +665,11 @@ const p = new Proxy(obj, {
 )
 
 ```
+
+### 代理 object
+
+访问一个普通对象所可能具有的所有读取条件：
+
+- 直接读取，如`obj.foo`
+- 判断对象是否有 key，如`key in obj`
+- 遍历对象，如`for const key in obj {}`
