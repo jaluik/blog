@@ -670,6 +670,75 @@ const p = new Proxy(obj, {
 
 访问一个普通对象所可能具有的所有读取条件：
 
-- 直接读取，如`obj.foo`
-- 判断对象是否有 key，如`key in obj`
-- 遍历对象，如`for const key in obj {}`
+- 直接读取，如`obj.foo`， 代理`get`方法
+- 判断对象是否有 key，如`key in obj`， 代理`has`方法
+- 遍历对象，如`for const key in obj {}`， 代理`ownKeys`、`set`(只对新增的属性触发)、`deleteProperty`方法，
+
+实现是这样的：
+
+```js
+const obj = { foo: 1 }
+
+const ITERATE_KEY = Symbol()
+const p = new Proxy(obj, {
+  get(target, key, receiver) {
+    track(target, key)
+    return Reflect.get(target, key, receiver)
+  },
+  has(target, key) {
+    track(target, key)
+    return Reflect.get(target, key)
+  },
+  ownKeys(target) {
+    track(target, ITERATE_KEY)
+    return Reflect.ownKeys(target)
+  },
+  set(target, key, newVal, receiver) {
+    const type = Object.prototype.hasOwnProperty.call(target, key)
+      ? 'SET'
+      : 'ADD'
+    const res = Reflect.set(target, key, newVal, receiver)
+    trigger(target, key, type)
+    return res
+  },
+  deleteProperty(target, key) {
+    const hasKey = Object.prototype.hasOwnProperty.call(target, key)
+    const res = Reflect.deleteProperty(target, key)
+    if (res && hasKey) {
+      trigger(target, key, 'DELETE')
+    }
+    return res
+  },
+})
+
+function trigger(target, key, type) {
+  const depsMap = bucket.get(target)
+  if (!depsMap) return
+  const effects = depsMap.get(key)
+
+  const effectsToRun = new Set()
+  effects &&
+    effects.forEach((effectFn) => {
+      if (effectFn !== activeEffect) {
+        effectsToRun.add(effectFn)
+      }
+    })
+
+  if (type === 'ADD' || type === 'DELETE') {
+    const iterateEffects = depsMap.get(ITERATE_KEY)
+    iterateEffects &&
+      iterateEffects.forEach((effectFn) => {
+        if (effectFn !== activeEffect) {
+          effectsToRun.add(effectFn)
+        }
+      })
+  }
+  effectsToRun.forEach((effectFn) => {
+    if (effectFn.options.scheduler) {
+      effectFn.options.scheduler(effectFn)
+    } else {
+      effectFn()
+    }
+  })
+}
+```
