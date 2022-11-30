@@ -742,3 +742,24 @@ function trigger(target, key, type) {
   })
 }
 ```
+
+### 避免不必要的更新
+
+经常有这种情况，对代理对象的属性进行了赋值，但是赋值后代理对象的属性值其实并未变化，所以无需触发更新。
+
+```js
+const p = new Proxy(obj, {
+  set(target, key, newVal, receiver) {
+    const oldVal = target[key]
+    const type = Object.prototype.hasOwnProperty.call(target, key)
+      ? 'SET'
+      : 'ADD'
+    const res = Reflect.set(target, key, newVal, receiver)
+    // 不同且都不是NaN
+    if (oldVal !== newVal && (oldVal !== oldVal || newVal !== newVal)) {
+      trigger(target, key, type)
+    }
+    return res
+  },
+})
+```
