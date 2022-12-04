@@ -888,3 +888,89 @@ function shallowReactive(obj) {
   return createReactive(obj, true)
 }
 ```
+
+### 代理数组
+
+#### 数组的索引和 length 属性
+
+数组的设值在规范中有说明，如果索引值大于数组长度，则会隐式地修改 length 的属性值
+。
+
+因此比如：
+
+```js
+const arr = reactive(['foo'])
+
+effect(() => {
+  console.log(arr.length)
+})
+
+arr[1] = 'bar' //这里应该触发副作用函数
+```
+
+这里需要改造，针对数组做特判
+
+```js
+function createReactive(obj, isShallow = false, isReadonly= false) {
+  return new Proxy(obj, {
+    set(target, key,newVal, receiver) {
+      if(isReadonly) {
+        console.warn(`属性${key}是已读的`)
+        return true
+      }
+      const oldVal = target[key]
+      const type = Array.isArray(target)
+      ? Number(key) < target.length ? : "SET":"ADD"
+      : Object.proto.hasOwnProperty.call(target, key) ? "SET" :"ADD"
+      const res  = Reflect.get(target, key, newVal, receiver)
+      if(target === receiver.raw) {
+        if(newVal !== oldVal && (newVal ==== newVal || oldVal === oldVal)) {
+          trigger(target, key, type)
+        }
+      }
+      return res
+    },
+  })
+}
+```
+
+注意这里只考虑了设置索引值会影响`length`属性，实际上，如果直接修改`length`也会影响索引值，但是特殊的是这里面只会影响大于新`length`值的索引属性
+
+因此需要特殊处理一下上面的`createReactive`函数，将新的`length`值传递出去
+
+```js
+function createReactive(obj, isShallow = false, isReadonly= false) {
+  return new Proxy(obj, {
+    // 省略方法
+    trigger(target, key, type, newVal)
+  })
+}
+
+function trigger(target, key, type, newVal) {
+   const depsMap = bucket.get(target)
+   if(!depsMap) return
+
+  //  省略之前写过的函数
+  if(type === "ADD" && Array.isArray(target)) {
+    const lengthEffects = depsMap.get("length")
+    lengthEffects && lengthEffects.forEach(effectFn=> {
+      if(effectFn !== activeEffet) {
+        effectsToRun.add(effectFn)
+      }
+    })
+  }
+
+  if(Array.isArray(target) && key === "length") {
+    depsMap.forEach((effects, key)=> {
+      if(key > newVal) {
+        effects.forEach(effectFn=> {
+          if(effectFn !== activeEffect) {
+            effectsToRun.add(effectFn)
+          }
+        })
+      }
+    })
+  }
+  // ...
+}
+```
