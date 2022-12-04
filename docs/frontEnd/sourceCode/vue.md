@@ -763,3 +763,95 @@ const p = new Proxy(obj, {
   },
 })
 ```
+
+针对对象继承时，需要进行一些额外处理。
+
+首先将代理函数封装起来
+
+```js
+function reactive(obj) {
+  return new Proxy(obj, {
+    //前文的代理桉树...
+  })
+}
+```
+
+例子：
+
+```js
+const obj = {}
+const proto = { bar: 1 }
+const child = reactive(obj)
+const parent = reactive(proto)
+
+Object.setPrototype(child, parent)
+
+effect(() => {
+  console.log(child.bar)
+})
+
+// 修改child.bar的值
+child.bar = 2 //会导致副作用函数执行两次
+```
+
+这里面副作用函数执行了两次，主要原因在于：
+
+1、 当调用`child.bar`时，由于`obj`不存在`bar`属性，所以会通过原型链调用`parent`中的`get`方法。此时会导致`parent`的副作用函数被收集。
+
+2、当调用`child.bar = 2`时， 根据规范可知，如果设置的属性不存在于对象上，会调用`parent`中的`set`方法，只是`target`不是指向父元素，而是执行`child`
+
+举一个例子：
+
+```js
+function testProxy(obj) {
+  const pro = new Proxy(obj, {
+    get(target, key, receiver) {
+      return Reflect.get(target, key, receiver)
+    },
+    set(target, key, newVal, receiver) {
+      console.log('target', target)
+      console.log('receiver', receiver)
+      return Reflect.set(target, key, newVal, receiver)
+    },
+  })
+  return pro
+}
+
+const p = testProxy({ name: 'parent', age: 10 })
+
+const c = testProxy({ name: 'child' })
+
+Object.setPrototypeOf(c, p)
+
+c.age = 11
+
+// 执行结果
+// target { name: 'child' }
+// receiver { name: 'child' }
+// target { name: 'parent', age: 10 }
+// receiver { name: 'child' }
+```
+
+这里可以看到，父代理对象的 set 方法也执行了，但是`receiver`还是指向的子对象，所以我们可以通过`receiver`来判断当前当前是否需要执行渲染。
+
+这里对`reactive函数进行改造`
+
+```js
+function reactive(obj) {
+  return new Proxy(obj, {
+    get(target, key, receiver) {
+      if (key === 'raw') {
+        return target
+      }
+      track(target, key)
+      return Reflect.get(target, key, receiver)
+    },
+    set(target, key, newVal, receiver) {
+      // 增加这一重判断，判断receiver必须是target的代理对象时才响应
+      if (receiver.raw === target) {
+        //...之前的判断
+      }
+    },
+  })
+}
+```
