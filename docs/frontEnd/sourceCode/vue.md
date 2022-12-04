@@ -855,3 +855,36 @@ function reactive(obj) {
   })
 }
 ```
+
+### 浅响应和深响应
+
+之前的方法还没有考虑如`obj.foo.bar = 2`这种修改的情形，需要支持深响应。
+
+```js
+function createReactive(obj, isShallow = false) {
+  return new Proxy(obj, {
+    get(target, key, receiver) {
+      if (key === 'raw') {
+        return target
+      }
+      const res = Reflect.get(target, key, receiver)
+      if (isShallow) {
+        return res
+      }
+      track(target, key)
+      if (typeof res === 'object' && res !== null) {
+        return reactive(res)
+      }
+      return res
+    },
+  })
+}
+
+function reactive(obj) {
+  return createReactive(obj)
+}
+
+function shallowReactive(obj) {
+  return createReactive(obj, true)
+}
+```
