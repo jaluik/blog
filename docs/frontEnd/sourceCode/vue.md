@@ -1012,3 +1012,7 @@ const obj = {
   },
 }
 ```
+
+因为`for...of`遍历时会读取`length`和索引属性（产生了监听），所以我们之前的实现可以直接满足。
+
+ps: 这里面有个值得注意的点`Array.prototype.values === Array.prototype[Symbol.iterator]`恒成立。
