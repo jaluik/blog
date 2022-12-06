@@ -974,3 +974,41 @@ function trigger(target, key, type, newVal) {
   // ...
 }
 ```
+
+#### 遍历数组
+
+针对`for ... in` 方法，虽然对数组的遍历不推荐使用`for ... in`方法，但是数组作为对象，语法上也是可行的。如果使用了`for ... in`方法遍历，正如前文所述，会调用代理对象的`ownKeys`方法。
+
+经过观察发现，如果数组遍历的 key 发生变化，本质上来讲还是数字的`length`属性发生了变化，因此我们可以直接追踪`length`属性
+
+```js
+function createReactive(obj, isShallow = false, isReadonly = false) {
+  return new Proxy(obj, {
+    // 省略方法
+    ownKeys(target) {
+      track(target, Array.isArray(target) ? 'length' : ITERATE_KEY)
+      return Reflect.ownKeys(target)
+    },
+  })
+}
+```
+
+针对`for ... of` 迭代，实际上是调用了可迭代对象的迭代协议的。 如果某个对象实现了`@@iterator`方法，则可以通过`for ... of`进行遍历，`js`中的`@@iterator`方法，即`[Symbol.iterator]`方法。
+
+比如
+
+```js
+const obj = {
+  val: 0,
+  [Symbol.iterator]() {
+    return {
+      next() {
+        return {
+          value: obj.val++,
+          done: obj.val > 10 ? true : false,
+        }
+      },
+    }
+  },
+}
+```
