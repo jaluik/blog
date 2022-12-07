@@ -1016,3 +1016,92 @@ const obj = {
 因为`for...of`遍历时会读取`length`和索引属性（产生了监听），所以我们之前的实现可以直接满足。
 
 ps: 这里面有个值得注意的点`Array.prototype.values === Array.prototype[Symbol.iterator]`恒成立。
+
+#### 数组的查找
+
+> 基础类型数组的查找方法我们已经可以很好的满足了,但是这里考虑一种特殊情形，数组中的元素为对象时。
+
+```js
+const obj = {}
+const arr = reactive([obj])
+
+console.log(arr.includes(arr[0])) // false
+```
+
+分析： 这里出现这个的原因在于调用代理对象的`.includes`方法时，调用代理对象的数组索引，由于代理对象是响应式的，所以这里会生成一个`代理对象obj`，直接获取`arr[0]`时，又会生成一个代理对象，这两个代理对象虽然都是空对象，但是地址不一样所以不等。
+
+相关代码：
+
+```js
+if (typeof res === 'object' && res !== null) {
+  // 就是reactive(res)调用多次时生成了多个代理对象
+  return isReadOnly ? readonly(res) : reactive(res)
+}
+```
+
+这里做一下改进，用 map 来缓存值。
+
+```js
+const reactiveMap = new Map()
+
+function reactive(obj) {
+  const existProxy = reactiveMap.get(obj)
+  if (existProxy) return existProxy
+  const proxy = createReactive(obj)
+  reactiveMap.set(obj, proxy)
+  return proxy
+}
+```
+
+这样改进了还有一个问题，比如
+
+```js
+const obj = {}
+const arr = reactive([obj])
+
+console.log(arr.includes(obj)) // false，用户需要它返回为true
+```
+
+因此我们需要重写代理数组的`includes`方法
+
+```js
+const arrayInstrumentations = {}
+
+;['includes', 'indexOf', 'lastIndexOf'].forEach((method) => {
+  const originMethod = Array.prototype[method]
+  arrayInstrumentations[method] = function (...args) {
+    // this指向了代理对象
+    let res = originMethod.apply(this, args)
+    if (res === false) {
+      res = originMethod.apply(this.raw, args)
+    }
+    return res
+  }
+})
+
+function createReactive(obj, isShallow = false, isReadOnly = false) {
+  return new Proxy(obj, {
+    get(target, key, receiver) {
+      if (key === 'raw') {
+        return target
+      }
+      // 注意这里的操作，进行了数组方法的重写
+      if (Array.isArray(target) && arrayInstrumentations.hasOwnProperty(key)) {
+        return Reflect.get(arrayInstrumentations, key, receiver)
+      }
+
+      if (!isReadOnly && typeof key !== 'symbol') {
+        track(target, key)
+      }
+      const res = Reflect.get(target, key, receiver)
+      if (isShallow) {
+        return res
+      }
+      if (typeof res === 'object' && res !== null) {
+        return reactive(res)
+      }
+      return res
+    },
+  })
+}
+```
