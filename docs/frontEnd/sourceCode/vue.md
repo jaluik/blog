@@ -954,7 +954,7 @@ function trigger(target, key, type, newVal) {
   if(type === "ADD" && Array.isArray(target)) {
     const lengthEffects = depsMap.get("length")
     lengthEffects && lengthEffects.forEach(effectFn=> {
-      if(effectFn !== activeEffet) {
+      if(effectFn !== activeEffect) {
         effectsToRun.add(effectFn)
       }
     })
@@ -1103,5 +1103,43 @@ function createReactive(obj, isShallow = false, isReadOnly = false) {
       return res
     },
   })
+}
+```
+
+现在还有一个问题，举例：
+
+```js
+const arr = reactive([])
+
+effect(() => {
+  arr.push(1)
+})
+
+effect(() => {
+  arr.push(1)
+})
+```
+
+执行这段代码会造成栈溢出，原因在于第一个`effect`会添加`length`到依赖，第二个`effect`执行时会读取`length属性`，造成第一个`effect`函数执行，第一个又会设置`length`值，重复造成第二个`effect`又执行，最终一直嵌套执行下去造成栈溢出。
+
+这里我们需要改造为特定方法执行时，不执行依赖收集。
+
+```js
+let shouldTrack = true
+
+;['push', 'pop', 'shift', 'unshift', 'splice'].forEach((method) => {
+  const originMethod = Array.prototype[method]
+  arrayInstrumentations[method] = function (...args) {
+    // this指向了代理对象
+    shouldTrack = false
+    let res = originMethod.apply(this, args)
+    shouldTrack = true
+    return res
+  }
+})
+
+function track(target, key) {
+  if (!activeEffect || !shouldTrack) return
+  // 省略的逻辑
 }
 ```
