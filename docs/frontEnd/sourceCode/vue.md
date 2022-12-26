@@ -14,7 +14,7 @@ slug: /frontEnd/sourceCode/vue
 
 纯函数： Vue 中大量使用`/*#__PURE__*/`注释（表明为纯函数），便于 webpack、rollup 等打包工具作`tree shaking`
 
-## 实现响应式
+## 非原始对象实现响应式
 
 ### 一个最基础响应式
 
@@ -1143,3 +1143,37 @@ function track(target, key) {
   // 省略的逻辑
 }
 ```
+
+### 代理 Set 和 Map
+
+针对`Set`和`Map`的例子，我们需要实现这样的效果：
+
+```js
+const proxy = reactive(new Map([['key', 1]]))
+effect(() => {
+  console.log(proxy.get('key'))
+})
+
+proxy.set('key', 2) //触发响应
+```
+
+这一节可以省略，主要和之前的方法差不多。 需要注意的是有些内部方法槽如`[[SetData]`只有原始的`Set`或者`Map`才有，因此使用代理对象执行集合类型的操作方法时，需要指定正确的`this`指向。
+
+## 原始对象实现响应式
+
+### 引入 Ref 的概念
+
+> 由于 Proxy 的目标只能是非原始值，因此如果想对原始对象实现响应式，只能通过 Ref 包裹。
+
+一个简单的方法：
+
+```js
+function ref(val) {
+  const wrapper = {
+    value: val,
+  }
+  return reactive(wrapper)
+}
+```
+
+然后在`effect`函数中，即可订阅`xx.val`来实现响应式。
