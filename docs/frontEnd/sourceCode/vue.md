@@ -1161,9 +1161,9 @@ proxy.set('key', 2) //触发响应
 
 ## 原始对象实现响应式
 
-### 引入 Ref 的概念
+### 引入 ref 的概念
 
-> 由于 Proxy 的目标只能是非原始值，因此如果想对原始对象实现响应式，只能通过 Ref 包裹。
+> 由于 Proxy 的目标只能是非原始值，因此如果想对原始对象实现响应式，只能通过 ref 包裹。
 
 一个简单的方法：
 
@@ -1172,8 +1172,102 @@ function ref(val) {
   const wrapper = {
     value: val,
   }
+  // 可以通过xx.__v_isRef === true 来判断当前返回值是否是一个原始值包裹的响应式对象
+  Object.defineProperty(wrapper, '__v_isRef', {
+    value: true,
+  })
   return reactive(wrapper)
 }
 ```
 
 然后在`effect`函数中，即可订阅`xx.val`来实现响应式。
+
+### 解决响应丢失问题
+
+使用扩展运算符`...`时，可能造成响应丢失的问题，比如：
+
+```js
+// obj是响应式对象
+const obj = reactive({ foo: 1, bar: 2 })
+
+const newObj = { ...obj }
+
+effect(() => {
+  console.log(newObj.foo)
+})
+
+// 此时修改后不会触发响应
+obj.foo = 100
+```
+
+这里可以采用这种方式来解决这个问题
+
+```js
+function toRef(obj, key) {
+  const wrapper = {
+    get value() {
+      return obj[key]
+    },
+    set value(newVal) {
+      obj[key] = newVal
+    },
+  }
+  // 保持概念上的一致，认为转换后的数据是真正的ref数据
+  Object.defineProperty(wrapper, '__v_isRef', {
+    value: true,
+  })
+
+  return wrapper
+}
+
+function toRefs(obj) {
+  const ret = {}
+  for (const key in obj) {
+    ret[key] = toRef(obj, key)
+  }
+  return ret
+}
+```
+
+这样我们只需要一步操作就可以完成对象的转换：
+
+```js
+const newObj = { ...toRefs(obj) }
+
+// 通过.value来访问值
+newObj.foo.value //1
+```
+
+因此 ref 对象不仅可以实现原始对象的响应式方案，也可以解决响应丢失的问题。
+
+### 自动脱 ref
+
+上面的实现有一个不够优雅的地方，必须使用`.value`才能获取到值，
+
+```js
+function proxyRefs(target) {
+  return new Proxy(target, {
+    get(target, key, receiver) {
+      const value = Reflect.get(target, key, receiver)
+      return value.__v_isRef ? value.value : value
+    },
+    set(target, key,newValue receiver) {
+      // 读取真实值
+      const value = target[key]
+      if(value.__v_isRef) {
+        value.value = newValue
+        return true
+      }
+      return Reflect.set(target, key,newValue receiver)
+    },
+  })
+}
+
+const newObj = proxyRefs({ ...toRefs(obj) })
+
+console.log(newObj.foo) //1
+```
+
+在实际使用`vue`时，通过`setup`函数所返回的对象实际上就通过了`proxyRefs`进行了包裹。
+
+除此以外，实际中的`reactive`也具有自动脱`ref`的能力。
