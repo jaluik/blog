@@ -1,7 +1,7 @@
 ---
 id: vue
-title: vue源码
-sidebar_label: vue源码
+title: vue源码（响应式）
+sidebar_label: vue源码（响应式）
 description: vue源码相关的细节
 keywords:
   - vue
