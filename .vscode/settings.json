@@ -8,6 +8,7 @@
     "loadbalancer",
     "luksa",
     "nodeport",
-    "proto"
+    "proto",
+    "vnode"
   ]
 }
