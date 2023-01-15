@@ -163,6 +163,7 @@ function createContainer(ops) {
         patch(null, child, el)
       })
     }
+    insert(el, container)
   }
 }
 ```
@@ -199,3 +200,86 @@ console.log(el.defaultValue) // bar
 ```
 
 这里说明了一个`HTML Attributes`可能关联多个`DOM Properties`
+
+### 正确设置元素属性
+
+#### 情景 1：空字符串属性
+
+设想有如下场景: `<button disabled>Button</button>`，如果我们使用`DOM Properties`来操作的话需要手动将`disable: ""` 这种类型的属性转换成`disabled=true`这种`DOM Properties`
+
+#### 情景 2: 只读的 dom 属性
+
+设想有如下场景： `<form id="form1"/> <input form="form1" />`，这里`input`元素的`el.form`是只读的，只能通过`setAttribute`赋值。
+
+```js
+// 改造一下mountElement
+function createContainer(ops) {
+  // ...
+  // 这是处理场景二
+  function shouldSetAsProps(el, key, value) {
+    if (key === 'form' && el.tagName === 'INPUT') {
+      return false
+    }
+    return key in el
+  }
+  function mountElement(vnode, container) {
+    const el = createElement(vnode.type)
+    if (vnode.props) {
+      for (const key in vnode.props) {
+        const value = vnode.props[key]
+        if (shouldSetAsProps(el, key, value)) {
+          const type = typeof el[key]
+          // 这里是处理场景一
+          if (type === 'boolean' && value === '') {
+            el[key] = true
+          } else {
+            el[key] = value
+          }
+        } else {
+          el.setAttribute(key, vnode.props[key])
+        }
+      }
+    }
+    // 省略children的处理
+    insert(el, container)
+  }
+}
+```
+
+最后我们做一下小优化，把`mountElement`中属性赋值的操作作为平台无关的配置参数传入。
+
+```js
+const renderer = createRenderer({
+  // 之前的其他属性
+  patchProps(el, key, preValue, nextValue) {
+    if (shouldSetAsProps(el, key, value)) {
+      const type = typeof el[key]
+      // 这里是处理场景一
+      if (type === 'boolean' && value === '') {
+        el[key] = true
+      } else {
+        el[key] = value
+      }
+    } else {
+      el.setAttribute(key, vnode.props[key])
+    }
+  },
+})
+
+function mountElement(vnode, container) {
+  const el = createElement(vnode.type)
+  if (typeof vnode.children === 'string') {
+    setElementText(el, vnode.children)
+  } else if (Array.isArray(vnode.children)) {
+    vnode.children.forEach((child) => {
+      patch(null, child, el)
+    })
+  }
+  if (vnode.props) {
+    for (const key in vnode.props) {
+      patchProps(el, key, null, vnode.props[key])
+    }
+  }
+  insert(el, container)
+}
+```
