@@ -252,7 +252,10 @@ function createContainer(ops) {
 const renderer = createRenderer({
   // 之前的其他属性
   patchProps(el, key, preValue, nextValue) {
-    if (shouldSetAsProps(el, key, value)) {
+    if (key === 'class') {
+      // 设置class属性
+      el.className = nextValue || ''
+    } else if (shouldSetAsProps(el, key, value)) {
       const type = typeof el[key]
       // 这里是处理场景一
       if (type === 'boolean' && value === '') {
@@ -261,7 +264,7 @@ const renderer = createRenderer({
         el[key] = value
       }
     } else {
-      el.setAttribute(key, vnode.props[key])
+      el.setAttribute(key, nextValue)
     }
   },
 })
