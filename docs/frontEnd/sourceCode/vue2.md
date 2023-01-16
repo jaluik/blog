@@ -323,3 +323,29 @@ function render(vnode, container) {
   container._vnode = vnode
 }
 ```
+
+### 区分 vnode 的类型
+
+如果`vnode.type`在更新阶段并不相同，则此时没有必要进行更新操作，而是先卸载之前的元素，再挂载新的`vnode`，并且还需要根据`vnode`的类型执行不同的挂载操作。
+
+```js
+function patch(n1, n2， container) {
+  if(n1 && n1.type !== n2.type) {
+    unmount(n1)
+    n1 = null
+  }
+  const {type} = n2
+  // 普通标签元素
+  if(typeof type === "string") {
+    if(!n1) {
+      mountElement(n2,container)
+    }else {
+      patchElement(n1, n2)
+    }
+  }else if (typeof type === "object") {
+    // ...组件
+  } else if(type === "xxx") {
+    // 处理其他类型的vnode
+  }
+}
+```
