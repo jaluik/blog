@@ -286,3 +286,40 @@ function mountElement(vnode, container) {
   insert(el, container)
 }
 ```
+
+### 卸载操作
+
+当有`renderer.render(null, document.querySelector("#app"))`时，实际上需要卸载`dom`，这里需要考虑这些情况
+
+- 容器内由多个组件渲染，需要正确调用组件的`beforeUnmount`、`unmounted`等方法
+- 内容不由组件渲染的，如果元素存在自定义指令，需要在卸载时正确执行指令对应的钩子函数
+- 需要移除绑定在`dom`上的监听函数
+
+我们需要将`vnode`和`dom`建立联系，首先
+
+```js
+function mountElement(vnode, container) {
+  const el = (vnode.el = createElement(vnode.type))
+  // ...省略之前的内容
+}
+
+function unmount(vnode) {
+  const parent = vnode.el.parentNode
+  if (parent) {
+    parent.removeChild(vnode.el)
+  }
+  //...可以根据vnode的类型做一些卸载工作
+}
+
+function render(vnode, container) {
+  if (vnode) {
+    patch(container._vnode, vnode, container)
+  } else {
+    if (container._vnode) {
+      // 卸载vnode
+      unmount(container._vnode)
+    }
+  }
+  container._vnode = vnode
+}
+```
