@@ -349,3 +349,61 @@ function patch(n1, n2， container) {
   }
 }
 ```
+
+### 事件的处理
+
+> 我们这里约定以`on`开头的属性都视作事件
+
+我们需要增加`patchProps`函数的判断
+
+```js
+const renderer = createRenderer({
+  // 之前的其他属性
+  patchProps(el, key, preValue, nextValue) {
+    if (/^on/.test(key)) {
+      const name = key.slice(2).toLowerCase()
+      // 先卸载，再更新
+      preValue && el.removeEventListener(name, preValue)
+      el.addEventListener(name, nextValue)
+    } else if (key === 'class') {
+      // 设置class属性
+      el.className = nextValue || ''
+    } else if (shouldSetAsProps(el, key, value)) {
+      const type = typeof el[key]
+      // 这里是处理场景一
+      if (type === 'boolean' && value === '') {
+        el[key] = true
+      } else {
+        el[key] = value
+      }
+    } else {
+      el.setAttribute(key, nextValue)
+    }
+  },
+})
+```
+
+这里优化一下性能，可以不用重复卸载和挂载监听函数，示例如下：
+
+```js
+const renderer = createRenderer({
+  patchProps(el, key, preValue, nextValue) {
+    if (/^on/.test(key)) {
+      // _vei是vue event invoker的简写
+      let invoker = el._vei
+      const name = key.slice(2).toLowerCase()
+      if (!invoker) {
+        invoker = el._vei = (e) => {
+          invoker.value(e)
+        }
+        invoker.value = nextValue
+        el.addEventListener(name, invoker)
+      } else {
+        // 只需要更新invoker.value就会更新处理函数
+        invoker.value = nextValue
+      }
+    }
+    // 省略其他判断代码
+  },
+})
+```
