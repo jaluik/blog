@@ -407,3 +407,5 @@ const renderer = createRenderer({
   },
 })
 ```
+
+### 事件冒泡和更新时机问题
