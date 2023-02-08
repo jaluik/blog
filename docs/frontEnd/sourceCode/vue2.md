@@ -65,9 +65,9 @@ const renderer = createRenderer()
 // 第一次渲染
 renderer.render(vnode1, document.querySelector('#app'))
 // 第二次渲染
-renderer.render(vnode1, document.querySelector('#app'))
+renderer.render(vnode2, document.querySelector('#app'))
 // 第三次渲染
-renderer.render(vnode1, document.querySelector('#app'))
+renderer.render(null, document.querySelector('#app'))
 ```
 
 ### 自定义渲染器
@@ -78,7 +78,7 @@ renderer.render(vnode1, document.querySelector('#app'))
 function createRenderer(options) {
   const { createElement, setElementText, insert } = options
 
-  function mount(vnode, container) {
+  function mountElement(vnode, container) {
     const el = createElement(vnode.type)
     if (typeof vnode.children === 'string') {
       setElementText(el, vnode.children)
@@ -156,7 +156,7 @@ function createContainer(ops) {
         el[key] = vnode.props[key]
       }
     }
-    if (typeof vnode === 'string') {
+    if (typeof vnode.children === 'string') {
       setElementText(el, vnode.children)
     } else if (Array.isArray(vnode.children)) {
       vnode.children.forEach((child) => {
@@ -186,7 +186,7 @@ const el = document.querySelector('#my-input')
 
 其中`el`对应的属性就是`DOM Properties`。
 
-`HTML Attributes`和`DOM Properties`基本都要相同的`key`属性，但是也有例外，比如：`HTML Attributes`中类名为`class`，而在`DOM Properties`类名属性为`className`。还有`aria-*`没有对应的`DOM Properties`。
+`HTML Attributes`和`DOM Properties`基本都有同的`key`属性，但是也有例外，比如：`HTML Attributes`中类名为`class`，而在`DOM Properties`类名属性为`className`。还有`aria-*`没有对应的`DOM Properties`。
 
 #### 核心原则：`HTML Attributes`设置了`DOM Properties`的初始值
 
