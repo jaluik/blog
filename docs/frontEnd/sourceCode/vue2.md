@@ -88,7 +88,7 @@ function createRenderer(options) {
 
   function patch(v1, v2, container) {
     if (!v1) {
-      mount(v2, container)
+      mountElement(v2, container)
     } else {
       // 更新，暂时忽略实现
     }
