@@ -481,7 +481,7 @@ function traverse(value, seen = new Set()) {
   // seen用于避免循环引用导致的死循环
   seen.add(value)
   for (const key in value) {
-    // value[keu] 用于响应式的注册监听器
+    // value[key] 用于响应式的注册监听器
     traverse(value[key], seen)
   }
   return value
