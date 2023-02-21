@@ -392,15 +392,19 @@ const renderer = createRenderer({
       // _vei是vue event invoker的简写
       let invoker = el._vei
       const name = key.slice(2).toLowerCase()
-      if (!invoker) {
-        invoker = el._vei = (e) => {
-          invoker.value(e)
+      if (nextValue) {
+        if (!invoker) {
+          invoker = el._vei = (e) => {
+            invoker.value(e)
+          }
+          invoker.value = nextValue
+          el.addEventListener(name, invoker)
+        } else {
+          // 只需要更新invoker.value就会更新处理函数
+          invoker.value = nextValue
         }
-        invoker.value = nextValue
+      } else if (invoker) {
         el.addEventListener(name, invoker)
-      } else {
-        // 只需要更新invoker.value就会更新处理函数
-        invoker.value = nextValue
       }
     }
     // 省略其他判断代码
@@ -409,3 +413,73 @@ const renderer = createRenderer({
 ```
 
 ### 事件冒泡和更新时机问题
+
+分析下面这种情况
+
+```js
+const {effect, ref} = VueReactivity
+
+const bol = ref(false)
+
+effect(()=> {
+  const vnode = {
+    type: "div",
+    props: bol.value ?  {
+      onClick: ()=>{
+        alert("父元素 clicked")
+      } : {}
+    },
+    children: [{
+      type: "p",
+      props: {
+        onClick:()=> {
+          bol.value = true
+        }
+      },
+      children: "text"
+    }]
+  }
+})
+
+```
+
+这一段代码我们预期的表现是子组件点击事件触发以后不会引起父组件点击事件的触发。
+
+实际效果是：`p`组件点击后引起了`bol.value`发生改变，于是触发了`effect`重新执行，这时候给`div`组件重新绑定了点击事件。由于事件冒泡， 所以又会引起`div`组件的点击事件执行。
+
+为了使得表现符合预期，我们需要改造一下`patchProps`函数。
+
+```js
+const renderer = createRenderer({
+  patchProps(el, key, preValue, nextValue) {
+    if (/^on/.test(key)) {
+      // _vei是vue event invoker的简写
+      let invoker = el._vei
+      const name = key.slice(2).toLowerCase()
+      if (nextValue) {
+        if (!invoker) {
+          invoker = el._vei = (e) => {
+            if (e.timeStamp < invoker.attached) {
+              return
+            }
+            if (Array.isArray(invoker.value)) {
+              invoker.value.forEach((fn) => fn(e))
+            } else {
+              invoker.value(e)
+            }
+          }
+          invoker.value = nextValue
+          invoker.attached = performance.now()
+          el.addEventListener(name, invoker)
+        } else {
+          // 只需要更新invoker.value就会更新处理函数
+          invoker.value = nextValue
+        }
+      } else if (invoker) {
+        el.addEventListener(name, invoker)
+      }
+    }
+    // 省略其他判断代码
+  },
+})
+```
