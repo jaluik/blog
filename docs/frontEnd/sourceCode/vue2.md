@@ -475,6 +475,7 @@ const renderer = createRenderer({
           // 只需要更新invoker.value就会更新处理函数
           invoker.value = nextValue
         }
+        //没有nextValue说明是卸载
       } else if (invoker) {
         el.addEventListener(name, invoker)
       }
