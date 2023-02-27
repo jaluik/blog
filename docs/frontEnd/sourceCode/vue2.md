@@ -484,3 +484,57 @@ const renderer = createRenderer({
   },
 })
 ```
+
+### 更新子节点
+
+针对`props.children`有下面三种情况：
+
+- null
+- string
+- array
+
+在`patchProps`后应该对`children`属性进行比较
+
+```js
+function patchElement(n1, n2) {
+  const el = (n2.el = n1.el)
+  const oldProps = n1.props
+  const newProps = n2.props
+  // 第一步 更新props
+  for (const key in newProps) {
+    if (newProps[key] !== oldProps[key]) {
+      patchProps(el, key, oldProps[key], newProps[key])
+    }
+  }
+  for (const key in oldProps) {
+    if (!(key in newProps)) {
+      patchProps(el, key, oldProps[key], null)
+    }
+  }
+  // 第二步： 更新children
+  patchChildren(n1, n2, el)
+}
+
+function patchChildren(n1, n2, container) {
+  if (typeof n2.children === 'string') {
+    if (Array.isArray(n1.children)) {
+      n1.children.forEach((c) => unmount(c))
+    }
+    setElementText(container, n2.children)
+  } else if (Array.isArray(n2.children)) {
+    if (Array.isArray(n1.children)) {
+      // 两个都是数组
+    } else {
+      setElementText(container, '')
+      n2.children.forEach((c) => patch(null, c, container))
+    }
+  } else {
+    // 说明新节点不存在
+    if (Array.isArray(n1.children)) {
+      n1.children.forEach((c) => unmount(c))
+    } else if (typeof n1.children === 'string') {
+      setElementText(container, '')
+    }
+  }
+}
+```
