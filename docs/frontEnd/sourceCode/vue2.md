@@ -538,3 +538,62 @@ function patchChildren(n1, n2, container) {
   }
 }
 ```
+
+### 增加文本节点和注释节点
+
+对于`<div><!-- 注释节点 -->我是文本节点</div>`这种类型的节点，我们需要创建特殊的唯一标识来作为`type`值。
+
+```js
+// 创建文本节点
+const Text = Symbol()
+//创建注释节点
+const Comment = Symbol()
+
+const renderer = createRenderer({
+  createElement(tag) {
+    //省略
+  },
+  setElementText(el, text) {
+    //省略
+  },
+  insert(el, parent, anchor = null) {
+    //省略
+  },
+  //跨平台创建文本节点
+  createText(text) {
+    return document.createTextNode(text)
+  },
+  //跨平台设置文本节点
+  setText(el, text) {
+    el.nodeValue = text
+  },
+  pathProps(el, key, prevValue, nextValue) {
+    //省略
+  },
+})
+
+function patch(n1, n2, container) {
+  if (n1 && n1.type !== n2.type) {
+    unmount(n1)
+    n1 = null
+  }
+  const { type } = n2
+  if (typeof type === 'string') {
+    if (!n1) {
+      mountElement(n2, container)
+    } else {
+      patchElement(n1, n2)
+    }
+  } else if (type === Text) {
+    if (!n1) {
+      const el = (n2.el = createText(n2.children))
+      insert(el, container)
+    } else {
+      const el = (n2.el = n1.el)
+      if (n2.children !== n1.children) {
+        setText(el, n2.children)
+      }
+    }
+  }
+}
+```
