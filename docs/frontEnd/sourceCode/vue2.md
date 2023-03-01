@@ -597,3 +597,40 @@ function patch(n1, n2, container) {
   }
 }
 ```
+
+### Fragment
+
+> `Fragment`节点概念和`React`中的概念一致，表示一个虚拟节点的子节点列表，不会在真实 DOM 中渲染出来。用于支持多个根节点。
+
+```js
+// 创建文本节点
+const Fragment = Symbol()
+
+function path(n1, n2, container) {
+  // 同上一节
+
+  if (typeof type === 'string') {
+    // 省略
+  } else if (type === Text) {
+    // 省略
+  } else if (type === Fragment) {
+    if (!n1) {
+      n2.children.forEach((c) => patch(null, c, container))
+    } else {
+      patchChildren(n1, n2, container)
+    }
+  }
+}
+
+// 这里还需要注意unmount函数也应该支持Fragment类型
+function unmount(vnode) {
+  if (vnode.type === Fragment) {
+    vnode.children.forEach((c) => unmount(c))
+    return
+  }
+  const parent = vnode.el.parentNode
+  if (parent) {
+    parent.removeChild(vnode.el)
+  }
+}
+```
