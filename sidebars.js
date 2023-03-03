@@ -4,6 +4,7 @@ module.exports = {
       'frontEnd/sourceCode/redux',
       'frontEnd/sourceCode/vue',
       'frontEnd/sourceCode/vue2',
+      'frontEnd/sourceCode/vue3',
     ],
     ['工具集']: ['tools/vscode', 'frontEnd/vim'],
     // Features: ['mdx'],
