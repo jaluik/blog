@@ -124,3 +124,37 @@ function patchChildren(n1, n2, container) {
 这里只考虑`patch`内容，下面再考虑移动`DOM`。
 
 ### 找到需要移动的元素
+
+这里的主要思路是：
+
+- 遍历新的`nodeList`时，如果匹配到了`key`相同的旧的`node`，则进行`patch`操作，并且此时观察此时匹配到的`index`是否仍然保持递增的序列，如果仍然保持则更新`lastIndex`为新的`index`, 否则说明需要移动`DOM`。
+
+```js
+function patchChildren(n1, n2, container) {
+  if (typeof n2.children === 'string') {
+    // 省略代码
+  } else if (Array.isArray(n2.children)) {
+    const oldChildren = n1.children
+    const newChildren = n2.children
+    // 增加了lastIndex变量来记录上一次遍历到的最大index位置
+    let lastIndex = 0
+    for (let i = 0; i < newChildren.length; i++) {
+      const newNode = newChildren[i]
+      for (let j = 0; j < oldChildren.length; j++) {
+        const oldNode = oldChildren[j]
+        if (newNode.key === oldNode.key) {
+          patch(oldNode, newNode, container)
+          if (j < lastIndex) {
+            // 需要移动
+          } else {
+            lastIndex = j
+          }
+          break
+        }
+      }
+    }
+  } else {
+    // 省略代码
+  }
+}
+```
