@@ -42,7 +42,9 @@ module.exports = {
     },
     footer: {
       style: 'dark',
-      copyright: `Copyright © ${new Date().getFullYear()} ❤️ <a href="https://github.com/jaluik">Jaluik</a>`,
+      copyright: `<div>Copyright © ${new Date().getFullYear()} ❤️ <a href="https://github.com/jaluik">Jaluik</a></div>
+      <div><a href="https://beian.miit.gov.cn/" target="_blank">渝ICP备2023013586号</a></div>
+      `,
     },
   },
   presets: [
