@@ -77,16 +77,6 @@ module.exports = {
       {
         hashed: true,
         language: ['en', 'zh'],
-        translations: {
-          search_placeholder: '搜索',
-          see_all_results: '查看所有结果',
-          no_results: '暂无结果。',
-          search_results_for: '搜索"{{ keyword }}"',
-          search_the_documentation: '搜索文档',
-          count_documents_found: '找到{{ count }}',
-          count_documents_found_plural: '找到{{ count }}个结果',
-          no_documents_were_found: '暂无结果。',
-        },
       },
     ],
   ],
