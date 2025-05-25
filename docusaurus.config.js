@@ -1,7 +1,7 @@
 module.exports = {
   title: 'jaluik的个人博客',
   tagline: 'jaluik的个人博客',
-  url: 'https://www.jaluik.com',
+  url: 'https://blog.jaluik.workers.dev',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -42,9 +42,7 @@ module.exports = {
     },
     footer: {
       style: 'dark',
-      copyright: `<div>Copyright © ${new Date().getFullYear()} ❤️ <a href="https://github.com/jaluik">Jaluik</a></div>
-      <div><a href="https://beian.miit.gov.cn/" target="_blank">渝ICP备2023013586号</a></div>
-      `,
+      copyright: `<div>Copyright © ${new Date().getFullYear()} ❤️ <a href="https://github.com/jaluik">Jaluik</a></div>`,
     },
   },
   presets: [
