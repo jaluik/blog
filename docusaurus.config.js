@@ -1,7 +1,7 @@
 module.exports = {
   title: 'jaluik的个人博客',
   tagline: 'jaluik的个人博客',
-  url: 'https://blog.jaluik.workers.dev',
+  url: 'https://blog.jaluik.vip',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
