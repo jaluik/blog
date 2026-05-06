@@ -5,6 +5,8 @@
  * work well for content-centric websites.
  */
 
+@use './social-icons';
+
 /* You can override the default Infima variables here. */
 :root {
   --ifm-color-primary: #25c2a0;

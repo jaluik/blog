@@ -1,3 +1,8 @@
+const {
+  createFooterSocialLink,
+  createSocialNavbarItem,
+} = require('./src/socialLinks')
+
 module.exports = {
   title: 'jaluik的个人博客',
   tagline: 'jaluik的个人博客',
@@ -53,16 +58,29 @@ module.exports = {
           label: '运维之路',
           position: 'left',
         },
-        {
+        createSocialNavbarItem({
           href: 'https://github.com/jaluik',
-          label: 'GitHub',
-          position: 'right',
-        },
+          icon: 'github',
+          label: 'GitHub Jaluik',
+        }),
+        createSocialNavbarItem({
+          href: 'https://x.com/jaluik_',
+          icon: 'x',
+          label: 'X @jaluik_',
+        }),
       ],
     },
     footer: {
       style: 'dark',
-      copyright: `<div>Copyright © ${new Date().getFullYear()} ❤️ <a href="https://github.com/jaluik">Jaluik</a></div>`,
+      copyright: `<div class="footer-social-row"><span>Copyright © ${new Date().getFullYear()}</span><span class="footer-heart" aria-hidden="true">❤️</span>${createFooterSocialLink({
+        href: 'https://github.com/jaluik',
+        icon: 'github',
+        label: 'Jaluik',
+      })}<span class="footer-social-separator" aria-hidden="true">·</span>${createFooterSocialLink({
+        href: 'https://x.com/jaluik_',
+        icon: 'x',
+        label: '@jaluik_',
+      })}</div>`,
     },
   },
   presets: [
