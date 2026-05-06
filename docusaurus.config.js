@@ -6,7 +6,7 @@ const {
 module.exports = {
   title: 'jaluik的个人博客',
   tagline: 'jaluik的个人博客',
-  url: 'https://blog.jaluik.vip',
+  url: 'https://jaluik.top',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   markdown: {
@@ -72,15 +72,19 @@ module.exports = {
     },
     footer: {
       style: 'dark',
-      copyright: `<div class="footer-social-row"><span>Copyright © ${new Date().getFullYear()}</span><span class="footer-heart" aria-hidden="true">❤️</span>${createFooterSocialLink({
-        href: 'https://github.com/jaluik',
-        icon: 'github',
-        label: 'Jaluik',
-      })}<span class="footer-social-separator" aria-hidden="true">·</span>${createFooterSocialLink({
-        href: 'https://x.com/jaluik_',
-        icon: 'x',
-        label: '@jaluik_',
-      })}</div>`,
+      copyright: `<div class="footer-social-row"><span>Copyright © ${new Date().getFullYear()}</span><span class="footer-heart" aria-hidden="true">❤️</span>${createFooterSocialLink(
+        {
+          href: 'https://github.com/jaluik',
+          icon: 'github',
+          label: 'Jaluik',
+        },
+      )}<span class="footer-social-separator" aria-hidden="true">·</span>${createFooterSocialLink(
+        {
+          href: 'https://x.com/jaluik_',
+          icon: 'x',
+          label: '@jaluik_',
+        },
+      )}</div>`,
     },
   },
   presets: [
