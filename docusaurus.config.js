@@ -4,7 +4,11 @@ module.exports = {
   url: 'https://blog.jaluik.vip',
   baseUrl: '/',
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
   favicon: 'img/favicon.ico',
   projectName: 'log', // Usually your repo name.
   themeConfig: {
@@ -56,11 +60,7 @@ module.exports = {
           showLastUpdateAuthor: true,
           showLastUpdateTime: true,
         },
-        blog: {
-          showReadingTime: true,
-          // Please change this to your repo.
-          editUrl: 'https://github.com/jaluik/blog',
-        },
+        blog: false,
         theme: {
           customCss: require.resolve('./src/css/custom.scss'),
         },
@@ -74,6 +74,7 @@ module.exports = {
       require.resolve('@easyops-cn/docusaurus-search-local'),
       {
         hashed: true,
+        indexBlog: false,
         language: ['en', 'zh'],
       },
     ],

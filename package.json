@@ -13,19 +13,19 @@
     "dev": "docusaurus start"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.7.0",
-    "@docusaurus/preset-classic": "^3.7.0",
-    "@easyops-cn/docusaurus-search-local": "^0.46.1",
-    "@mdx-js/react": "^3.0.0",
+    "@docusaurus/core": "^3.10.1",
+    "@docusaurus/preset-classic": "^3.10.1",
+    "@easyops-cn/docusaurus-search-local": "^0.55.1",
+    "@mdx-js/react": "^3.1.1",
     "clsx": "^1.1.1",
-    "docusaurus-plugin-sass": "^0.2.2",
+    "docusaurus-plugin-sass": "^0.2.6",
     "nodejieba": "^2.6.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^3.7.0",
-    "@tsconfig/docusaurus": "^1.0.5",
+    "@docusaurus/module-type-aliases": "^3.10.1",
+    "@tsconfig/docusaurus": "^2.0.9",
     "@types/react": "^18.2.29",
     "@types/react-helmet": "^6.1.0",
     "@types/react-router-dom": "^5.1.7",
