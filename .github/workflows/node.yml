@@ -11,17 +11,21 @@ jobs:
 
     steps:
       - name: Checkout main
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: main
 
       - name: Setup node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: '22.x'
+          cache: pnpm
 
       - name: Build project
-        run: yarn && yarn build
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+          pnpm build
 
       - name: Upload COS
         uses: zkqiang/tencent-cos-action@v0.1.0

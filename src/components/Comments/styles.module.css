@@ -1,0 +1,11 @@
+.comments {
+  border-top: 1px solid var(--ifm-toc-border-color);
+  padding-top: 2rem;
+}
+
+.title {
+  color: var(--ifm-heading-color);
+  font-size: 1.25rem;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}

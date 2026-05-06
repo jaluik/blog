@@ -12,6 +12,22 @@ module.exports = {
   favicon: 'img/favicon.ico',
   projectName: 'log', // Usually your repo name.
   themeConfig: {
+    comments: {
+      provider: 'giscus',
+      repo: 'jaluik/blog',
+      repoId: 'MDEwOlJlcG9zaXRvcnkzNDU2MjkxNjU=',
+      category: 'General',
+      categoryId: 'MDE4OkRpc2N1c3Npb25DYXRlZ29yeTMyNzA2OTAz',
+      mapping: 'pathname',
+      strict: '0',
+      reactionsEnabled: '1',
+      emitMetadata: '0',
+      inputPosition: 'top',
+      lightTheme: 'light',
+      darkTheme: 'dark',
+      lang: 'zh-CN',
+      loading: 'lazy',
+    },
     navbar: {
       title: 'Jaluik',
       logo: {
