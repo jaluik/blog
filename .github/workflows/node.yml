@@ -27,6 +27,19 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm build
 
+      - name: Verify docs update dates
+        run: |
+          expected_timestamp="$(git -C docs/tools log -1 --format=%ct -- vscode.md)"
+          expected_commit="$(git -C docs/tools log -1 --format='%H %s' -- vscode.md)"
+          actual_datetime="$(grep -o 'datetime="[^"]*"' build/docs/tools/vscode/index.html | head -n 1 | cut -d '"' -f 2)"
+          actual_timestamp="$(node -e 'console.log(Math.floor(new Date(process.argv[1]).getTime() / 1000))' "$actual_datetime")"
+
+          echo "Git history shallow: $(git rev-parse --is-shallow-repository)"
+          echo "Expected vscode.md last update: ${expected_timestamp} (${expected_commit})"
+          echo "Built vscode.md last update: ${actual_timestamp} (${actual_datetime})"
+
+          test "$actual_timestamp" = "$expected_timestamp"
+
       - name: Upload COS
         uses: zkqiang/tencent-cos-action@v0.1.0
         with:
