@@ -37,7 +37,7 @@ module.exports = {
       title: 'Jaluik',
       logo: {
         alt: 'log',
-        src: 'img/logo.jpeg',
+        src: 'img/logo.png',
       },
       items: [
         {
