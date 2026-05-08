@@ -17,9 +17,8 @@
     "@docusaurus/preset-classic": "^3.10.1",
     "@easyops-cn/docusaurus-search-local": "^0.55.1",
     "@mdx-js/react": "^3.1.1",
-    "clsx": "^1.1.1",
+    "clsx": "^2.1.1",
     "docusaurus-plugin-sass": "^0.2.6",
-    "nodejieba": "^2.6.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -27,9 +26,9 @@
     "@docusaurus/module-type-aliases": "^3.10.1",
     "@tsconfig/docusaurus": "^2.0.9",
     "@types/react": "^18.2.29",
-    "@types/react-helmet": "^6.1.0",
+    "@types/react-helmet": "^6.1.11",
     "@types/react-router-dom": "^5.1.7",
-    "sass": "^1.49.9",
+    "sass": "^1.99.0",
     "typescript": "~5.2.2"
   },
   "browserslist": {
@@ -48,5 +47,11 @@
     "node": ">=20.18.1"
   },
   "packageManager": "pnpm@10.33.2",
+  "pnpm": {
+    "overrides": {
+      "picomatch": "2.3.2",
+      "serialize-javascript": "7.0.5"
+    }
+  },
   "description": "jaluik blog"
 }
