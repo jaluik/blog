@@ -8,6 +8,10 @@ module.exports = {
   tagline: 'jaluik的个人博客',
   url: 'https://jaluik.top',
   baseUrl: '/',
+  i18n: {
+    defaultLocale: 'zh-CN',
+    locales: ['zh-CN'],
+  },
   onBrokenLinks: 'throw',
   markdown: {
     hooks: {
@@ -15,7 +19,8 @@ module.exports = {
     },
   },
   favicon: 'img/favicon.ico',
-  projectName: 'log', // Usually your repo name.
+  organizationName: 'jaluik',
+  projectName: 'blog',
   themeConfig: {
     comments: {
       provider: 'giscus',
@@ -36,7 +41,7 @@ module.exports = {
     navbar: {
       title: 'Jaluik',
       logo: {
-        alt: 'log',
+        alt: 'Jaluik',
         src: 'img/logo.png',
       },
       items: [

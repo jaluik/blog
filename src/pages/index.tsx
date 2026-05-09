@@ -24,7 +24,13 @@ function Home() {
             <h2 className={styles.content}>think more</h2>
             <h2 className={styles.content}>do better</h2>
           </div>
-          <img src='img/zoro.png' className={styles.bg} />
+          <img
+            src='img/zoro.png'
+            className={styles.bg}
+            alt='Jaluik 首页插画'
+            width='800'
+            height='600'
+          />
         </div>
       </main>
     </Layout>
