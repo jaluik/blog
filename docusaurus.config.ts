@@ -1,9 +1,22 @@
-const {
+import type {Config} from '@docusaurus/types'
+import {createRequire} from 'node:module'
+
+import {
   createFooterSocialLink,
   createSocialNavbarItem,
-} = require('./src/socialLinks')
+} from './src/socialLinks'
 
-module.exports = {
+const require = createRequire(import.meta.url)
+
+type ConfigWithMarkdownHooks = Config & {
+  markdown?: Config['markdown'] & {
+    hooks?: {
+      onBrokenMarkdownLinks?: Config['onBrokenMarkdownLinks']
+    }
+  }
+}
+
+const config: ConfigWithMarkdownHooks = {
   title: 'jaluik的个人博客',
   tagline: 'jaluik的个人博客',
   url: 'https://jaluik.top',
@@ -97,8 +110,7 @@ module.exports = {
       '@docusaurus/preset-classic',
       {
         docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
+          sidebarPath: require.resolve('./sidebars.ts'),
           editUrl: 'https://github.com/jaluik/blog/tree/main/',
           showLastUpdateAuthor: true,
           showLastUpdateTime: true,
@@ -112,7 +124,6 @@ module.exports = {
   ],
   plugins: [
     'docusaurus-plugin-sass',
-    // ... Your other plugins.
     [
       require.resolve('@easyops-cn/docusaurus-search-local'),
       {
@@ -123,3 +134,5 @@ module.exports = {
     ],
   ],
 }
+
+export default config
