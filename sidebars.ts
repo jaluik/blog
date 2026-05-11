@@ -1,4 +1,4 @@
-import type {SidebarsConfig} from '@docusaurus/plugin-content-docs'
+import type { SidebarsConfig } from '@docusaurus/plugin-content-docs'
 
 const sidebars: SidebarsConfig = {
   firstSidebar: {
@@ -15,6 +15,9 @@ const sidebars: SidebarsConfig = {
     python: ['backEnd/python/pythonProxyPool'],
   },
   thirdSidebar: ['operations/gitActionsDeploy', 'operations/k8s'],
+  aiSidebar: {
+    资源: ['ai/openSourceAiResources'],
+  },
 }
 
 export default sidebars

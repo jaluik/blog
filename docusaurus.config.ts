@@ -59,6 +59,12 @@ const config: ConfigWithMarkdownHooks = {
       },
       items: [
         {
+          to: 'docs/ai/openSourceAiResources',
+          activeBasePath: 'docs/ai',
+          label: 'AI',
+          position: 'left',
+        },
+        {
           to: 'docs/frontEnd/sourceCode/redux',
           activeBasePath: 'docs/frontEnd',
           label: '前端漫谈',
