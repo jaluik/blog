@@ -12,7 +12,7 @@ const sidebars: SidebarsConfig = {
     工具集: ['tools/vscode', 'frontEnd/vim'],
   },
   secondSidebar: {
-    python: ['backEnd/python/pythonProxyPool'],
+    python: ['backEnd/python/pythonProxyPool', 'backEnd/python/uvBestPractices'],
   },
   thirdSidebar: ['operations/gitActionsDeploy', 'operations/k8s'],
   aiSidebar: {
