@@ -4,6 +4,7 @@ const sidebars: SidebarsConfig = {
   firstSidebar: {
     源码学习: [
       'frontEnd/cssTrick',
+      'frontEnd/sourceCode/react',
       'frontEnd/sourceCode/redux',
       'frontEnd/sourceCode/vue',
       'frontEnd/sourceCode/vue2',
